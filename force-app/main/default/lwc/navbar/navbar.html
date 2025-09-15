@@ -1,0 +1,65 @@
+<template>
+    <div class="navbar">
+        <div class="left">
+            <span class="title">AstreaTSA</span>
+            <lightning-button label="Home" onclick={gotoHome}></lightning-button>
+            <lightning-button label="Profile" onclick={gotoProfile}></lightning-button>
+            <lightning-button label="Punch In/Out Report" onclick={gotoReport}></lightning-button>
+        </div>
+
+        <div class="right">
+            <lightning-button 
+                if:true={punchedIn}
+                variant="brand" 
+                label="Punch In"
+                onclick={openPunchForm}
+            ></lightning-button>
+
+            <lightning-button 
+                if:true={punchedOut}
+                variant="brand" 
+                label="Punch Out"
+                onclick={punchOutUser}
+            ></lightning-button>
+
+            <lightning-button 
+                class="btn-logout"
+                variant="brand" 
+                label="Log Out"
+                onclick={logOutUser}
+            ></lightning-button>
+
+        </div>
+
+        <template if:true={showPunchModal}>
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+
+                    <!-- Header -->
+                    <header class="slds-modal__header">
+                        <h2 class="slds-text-heading_medium">Punch In</h2>
+                    </header>
+
+                    <!-- Body -->
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <lightning-radio-group
+                            label="Select Work Mode"
+                            options={options}
+                            value={workingMode}
+                            type="radio"
+                            onchange={handleOptionChange}>
+                        </lightning-radio-group>
+                    </div>
+
+                    <!-- Footer -->
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="Cancel" onclick={closeModal}></lightning-button>
+                        <lightning-button variant="brand" label="Punch In" class="slds-m-left_small" onclick={punchInUser}></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+
+    </div>
+</template>

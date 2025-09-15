@@ -1,0 +1,14 @@
+Create,Update task
+Punch In/Out Report Structure Creation
+
+1. Total time for daily task
+2. Time input: hour and min(diff - 5) dropdown
+3. Automate time : user enters "from" and automatically show "to" time with respect to punch in.
+
+Feature: 
+1. Create daily task report like - For daily task : you can upload screenshots,Desc,Question.
+2. Admin can add daily task.
+
+3. Send detailed report to (custom input to set admin, can be multiple admin) every week.
+4. Show number of WFH left and if khatam then show warning.
+5. If punch out time is before 9 hours completed then show warning : You haven't completed your 9 hours yet and if user still click on punch out then punch it out otherwise do not punch out.

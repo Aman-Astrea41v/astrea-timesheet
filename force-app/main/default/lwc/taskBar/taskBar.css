@@ -1,0 +1,27 @@
+.taskbar {
+    padding: 1rem;
+}
+
+.slds-modal {
+    display: block;
+}
+
+.add-wrapper {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.current-datetime {
+    font-weight: bold;
+    font-size: large;
+}
+
+.no-task-text {
+    color: #e63946; 
+    font-weight: bold;
+    font-size: 1.1rem;
+    text-align: center;
+    margin: 1rem 0;
+}

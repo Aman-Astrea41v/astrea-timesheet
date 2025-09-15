@@ -1,0 +1,62 @@
+<template>
+    <lightning-card>
+        <!-- Header -->
+        <div class="slds-card__header slds-grid slds-grid_align-spread slds-p-around_small slds-bg-neutral-200">
+            <h2 class="slds-text-heading_medium heading">User Profile</h2>
+        </div>
+
+        <!-- Body -->
+        <div class="slds-p-around_medium slds-card__body">
+            <!-- Flex container -->
+
+            <div class="exampleHolder" if:true={isLoading}>
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            </div>
+
+            <div class="profile-container" if:false={isLoading}>
+                <!-- Left Column -->
+                <div class="profile-column">
+                    <div class="profile-item">
+                        <strong>First Name:</strong> <span>{user.fname}</span>
+                    </div>
+                    <div class="profile-item">
+                        <strong>Username:</strong> <span class="readonly">{user.username}</span>
+                    </div>
+                    <div class="profile-item">
+                        <strong>College Name:</strong> <span>{user.collegeName}</span>
+                    </div>
+                    <div class="profile-item">
+                        <strong>Street:</strong> <span>{user.street}</span>
+                    </div>
+                    <div class="profile-item">
+                        <strong>State:</strong> <span>{user.state}</span>
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div class="profile-column">
+                    <div class="profile-item">
+                        <strong>Last Name:</strong> <span>{user.lname}</span>
+                    </div>
+                    <div class="profile-item">
+                        <strong>Email:</strong> <span>{user.email}</span>
+                    </div>
+                    <div class="profile-item">
+                        <strong>Phone:</strong> <span>{user.phone}</span>
+                    </div>
+                    <div class="profile-item">
+                        <strong>City:</strong> <span>{user.city}</span>
+                    </div>
+                    <div class="profile-item">
+                        <strong>Country:</strong> <span>{user.country}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Button -->
+            <div class="edit-button-wrapper" if:false={isLoading}>
+                <lightning-button label="Edit Profile" variant="brand"></lightning-button>
+            </div>
+        </div>
+    </lightning-card>
+</template>

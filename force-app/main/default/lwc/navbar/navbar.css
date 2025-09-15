@@ -1,0 +1,28 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f4f6f9;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.left {
+    display: flex;
+    align-items: center;
+}
+
+.btn-logout{
+    margin-left: 1rem;
+}
+
+.title {
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-right: 1rem;
+    color: #16325c;
+}
+
+.left lightning-button {
+    margin-right: 0.5rem;
+}

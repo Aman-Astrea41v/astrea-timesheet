@@ -1,0 +1,28 @@
+.c-container {
+    border: 1px solid #d8dde6;
+    margin: 10px 0 20px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh; 
+}
+
+/* Navbar area */
+.page-header {
+    background: #ffffff;
+    border-bottom: 1px solid #d8dde6;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Shared section padding */
+.page-section {
+    padding: 1rem;
+}
+
+/* Main content */
+.page-main {
+    background: #f8f8f8;
+    flex: 1;            
+    overflow-y: auto;   
+}

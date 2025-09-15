@@ -1,0 +1,21 @@
+<template>
+    <div class="c-container">
+        <lightning-layout multiple-rows="true">
+            <!-- Navbar row -->
+            <lightning-layout-item padding="around-small" size="12">
+                <div class="page-section page-header">
+                    <c-navbar onnavigate={navigateTo}></c-navbar>
+                </div>
+            </lightning-layout-item>
+
+            <!-- TaskBar -->
+            <lightning-layout-item padding="around-small" size="12">
+                <div class="page-section page-main">
+                    <c-task-bar if:true={isTaskbar}></c-task-bar>
+                    <c-profile if:true={isProfile}></c-profile>
+                    <c-report if:true={isReport}></c-report>
+                </div>
+            </lightning-layout-item>
+        </lightning-layout>
+    </div>
+</template>

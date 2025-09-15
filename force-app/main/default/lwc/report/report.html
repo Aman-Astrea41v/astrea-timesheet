@@ -1,0 +1,26 @@
+<template>
+    <lightning-card title="Last 5 Days Report" class="slds-p-around_medium">
+        <div class="report-grid">
+            <template if:true={reports.length}>
+                <template for:each={reports} for:item="day">
+                    <div key={day.date} class="report-card">
+                        <h2 class="day-name">{day.dayName}</h2>
+                        <p class="date">{day.date}</p>
+                        <div class="time-row">
+                            <span class="label">Login:</span>
+                            <span class="value">{day.login}</span>
+                        </div>
+                        <div class="time-row">
+                            <span class="label">Logout:</span>
+                            <span class="value">{day.logout}</span>
+                        </div>
+                    </div>
+                </template>
+            </template>
+
+            <template if:false={reports.length}>
+                <p class="error-text">⚠ Error loading report.</p>
+            </template>
+        </div>
+    </lightning-card>
+</template>

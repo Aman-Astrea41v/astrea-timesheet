@@ -1,0 +1,96 @@
+<template>
+    <div class="taskbar">
+
+        <div class="add-wrapper">
+            <lightning-button 
+                class="btn-add-task" 
+                variant="brand" 
+                label="Add Task" 
+                onclick={openTaskForm}>
+            </lightning-button>
+
+            <div class="current-datetime">
+                {currentDateTime}
+            </div>
+
+            <lightning-input 
+                type="date" 
+                label="Select Date" 
+                value={selectedDate} 
+                onchange={handleDateChange}>
+            </lightning-input>
+
+            <lightning-button 
+                variant="neutral" 
+                label="Today" 
+                onclick={getTodaysTask}>
+            </lightning-button>
+        </div>
+
+        <!-- Modal for Task Form -->
+        <template if:true={showTaskForm}>
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <h2 class="slds-text-heading_medium">{modalTitle}</h2>
+                    </header>
+
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <lightning-input 
+                            label="Task Title" 
+                            value={newTask.task} 
+                            onchange={handleTaskChange}>
+                        </lightning-input>
+
+                        <lightning-input 
+                            type="time" 
+                            label="Time" 
+                            value={newTask.time} 
+                            onchange={handleTimeChange}>
+                        </lightning-input>
+
+                        <lightning-textarea 
+                            label="Description" 
+                            value={newTask.description} 
+                            onchange={handleDescChange}>
+                        </lightning-textarea>
+                    </div>
+
+                    <footer class="slds-modal__footer">
+                        <lightning-button 
+                            label="Cancel" 
+                            onclick={closeTaskForm}>
+                        </lightning-button>
+                        <lightning-button 
+                            variant="brand" 
+                            label="Save" 
+                            class="slds-m-left_small" 
+                            onclick={saveTask}>
+                        </lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+
+        <!-- Datatable -->
+        <template if:true={tasks.length}>
+            <lightning-card title="Tasks" class="slds-m-top_medium">
+                <lightning-datatable
+                    key-field="id"
+                    data={tasks}
+                    show-row-number-column="true"
+                    columns={columns}
+                    hide-checkbox-column
+                    onrowaction={handleRowAction}>
+                </lightning-datatable>
+            </lightning-card>
+        </template>
+
+        <lightning-card title="Tasks" class="slds-m-top_medium" if:false={tasks.length}>
+            <p class="no-task-text">No task for {selectedDate} Found.</p>
+        </lightning-card>
+
+        
+    </div>
+</template>
