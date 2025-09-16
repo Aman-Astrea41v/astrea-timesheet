@@ -1,5 +1,7 @@
 import { getCookies } from 'c/utils';
-import { LightningElement, track } from 'lwc';
+import { LightningElement, track, wire } from 'lwc';
+import MY_CHANNEL from "@salesforce/messageChannel/MyChannel__c";
+import { subscribe, MessageContext } from 'lightning/messageService';
 import getTasks from '@salesforce/apex/Tasks.getTasks';
 
 export default class taskBar extends LightningElement {
@@ -7,37 +9,59 @@ export default class taskBar extends LightningElement {
     currentDateTime;
     selectedDate;
     isToday = false;
+    subscription;
+    @track hours = Array.from({ length: 10 }, (_, i) => i);  
+    @track minutes = Array.from({ length: 60 }, (_, i) => i); 
+    disableTaskBtn = true;
+    formattedDuration = '';
+    Modalhours = 0;
+    Modalminutes = 0;
+    punchInTime;
+    punchOutTime;
+    startTimePerTask;
+    isEdit;
 
     @track tasks = [];
 
-    @track newTask = { task: '', time: '', description: '' };
+    @track newTask = { id:'', title: '', duration: 0,startTime:'',endTime:'--:--', description: '' };
     showTaskForm = false;
 
-    columns = [
-        { label: 'Task', fieldName: 'task' },
-        { label: 'Time', fieldName: 'time' },
-        { label: 'Description', fieldName: 'description' },
-        {
-            type: 'button-icon',
-            initialWidth: 50,
-            typeAttributes: {
-                iconName: 'utility:edit',
-                name: 'edit',
-                title: 'Edit',
-                variant: 'bare',
-                alternativeText: 'Edit'
-            }
-        },
-    ];
+    @wire(MessageContext)
+        MessageContext;
 
     // Run when the component is mounted/ Screen is refreshed
     async connectedCallback(){
-        await this.getTodaysTask();
-        // Updating time
-        this.updateTime();
-        setInterval(() => {
-            this.updateTime();
-        },1000);
+        // await this.getTodaysTask();
+        if(!this.subscription){
+            this.subscription = subscribe(this.MessageContext, MY_CHANNEL, (message) => {
+                this.handleMessage(message)
+            })
+        }
+
+        this.tasks = this.tasks.map(task => ({
+            ...task,
+            formattedDuration: this.formatDuration(task.duration)
+        }));
+
+    }
+
+    handleMessage(message){
+        if(message.type == 'PUNCHIN'){
+            this.disableTaskBtn = message.disableTask;
+            this.punchInTime = message.time;
+            this.newTask.startTime = new Date(message.time).toLocaleString().substring(11, 19);
+            this.startTimePerTask = new Date(message.time).toLocaleString().substring(11, 19);
+        }
+        else if(message.type == 'PUNCHOUT'){
+            this.disableTaskBtn = message.disableTask;
+            this.punchOutTime = message.time;
+        }
+    }
+
+    formatDuration(duration){
+        let hours = Math.floor(duration / 60);
+        let minutes = duration % 60;
+        return `${hours} H ${minutes} M`;
     }
 
     async getTodaysTask(){
@@ -49,7 +73,7 @@ export default class taskBar extends LightningElement {
             this.tasks = [];
             if(tasks.length > 0){
                 tasks.map((task) => {
-                    let formattedTime = new Date(task.Time__c).toISOString().substring(11, 19);
+                    let formattedTime = new Date(task.StartTime__c).toISOString().substring(11, 19);
                     this.tasks.push({
                         id: task.Id,
                         task: task.Name,
@@ -63,45 +87,55 @@ export default class taskBar extends LightningElement {
         }
     }
 
-    async handleDateChange(event){
-        if(this.selectedDate == event.target.value){
-            return;
+    updateTaskTimes(event) {
+        // Update the selected value
+        if (event.target.dataset.id === 'taskHours') {
+            this.Modalhours = parseInt(event.target.value) || 0;
+        } else {
+            console.log(parseInt(event.target.value));
+            this.Modalminutes = parseInt(event.target.value) || 0;
         }
-        this.selectedDate = event.target.value;
-        if(event.target.value == null){
-            if(!this.isToday){
-                await this.getTodaysTask();
-            }
+
+        // Split startTime
+        let [h, m, s] = this.newTask.startTime.split(':').map(Number);
+
+        // Add selected hours and minutes
+        let updatedHour = h + this.Modalhours;
+        let updatedMin = m + this.Modalminutes;
+
+        // Handle minute overflow
+        if (updatedMin >= 60) {
+            updatedHour += Math.floor(updatedMin / 60);
+            updatedMin = updatedMin % 60;
         }
-        else{
-            const Id = await getCookies('uid');
-            const date = new Date(this.selectedDate);
-            const tasks = await getTasks({userId: Id, specificDate: date});
-            this.tasks = [];
-            if(tasks.length > 0){
-                tasks.map((task) => {
-                    let formattedTime = new Date(task.Time__c).toISOString().substring(11, 19);
-                    this.tasks.push({
-                        id: task.Id,
-                        task: task.Name,
-                        time: formattedTime,
-                        description: task.Description__c
-                    })
-                })
-            }
-            this.isToday = false;
-        }
+
+        // Optionally handle hour overflow if you want 24h format
+        updatedHour = updatedHour % 24;
+
+        // Update endTime
+        this.newTask.endTime = `${String(updatedHour).padStart(2, '0')}:${String(updatedMin).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     }
+
 
     get modalTitle() {
         return this.isEdit ? 'Edit Task' : 'New Task';
+    }
+
+    editTask(event){
+        this.showTaskForm = true;
+        this.isEdit = true;
+        this.tasks.map(task => {
+            if(task.id == event.target.dataset.id){
+                this.newTask = task;
+            }
+        })
     }
 
     // Open modal
     openTaskForm() {
         this.showTaskForm = true;
         this.isEdit = false;
-        this.newTask = { id: '', task: '', time: '', description: '' };
+        this.newTask = { id:'', title: '', duration: 0,startTime:this.startTimePerTask,endTime:'--:--', description: '' };
     }
 
     // Close modal
@@ -110,25 +144,16 @@ export default class taskBar extends LightningElement {
     }
 
     // Input handlers
-    handleTaskChange(event) {
-        this.newTask.task = event.target.value;
-    }
-
-    handleTimeChange(event) {
-        this.newTask.time = event.target.value;
+    handleTitleChange(event) {
+        this.newTask.title = event.target.value;
     }
 
     handleDescChange(event) {
         this.newTask.description = event.target.value;
     }
 
-    // To update current time
-    updateTime(){
-        const now = new Date();
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        const date = now.toLocaleDateString('en-US', options);
-        const time = now.toLocaleTimeString('en-US');
-        this.currentDateTime = `${date}, ${time}`;
+    get taskButtonTitle(){
+        return this.disableTaskBtn ? 'Punch In to Add Task' : 'Add Task';
     }
 
     // Save task
@@ -138,20 +163,14 @@ export default class taskBar extends LightningElement {
             this.tasks = this.tasks.map(task => task.id === this.newTask.id ? {...this.newTask} : task);
         } else {
             // add new task
+            this.startTimePerTask = this.newTask.endTime;
+
             this.newTask.id = Date.now().toString();
+            this.newTask.duration = parseInt(this.Modalhours) * 60 + parseInt(this.Modalminutes);
             this.tasks = [...this.tasks, this.newTask];
+
         }
         this.closeTaskForm();
     }
 
-    handleRowAction(event) {
-        const actionName = event.detail.action.name;
-        const row = event.detail.row;
-
-        if (actionName === 'edit') {
-            this.isEdit = true;
-            this.newTask = { ...row };
-            this.showTaskForm = true;
-        }
-    }
 }

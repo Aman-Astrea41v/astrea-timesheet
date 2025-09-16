@@ -5,14 +5,22 @@ import MY_CHANNEL from "@salesforce/messageChannel/MyChannel__c";
 
 export default class Main extends LightningElement {
     @track currentPage = 'login';
-
+    subscription;
     @wire(MessageContext)
     MessageContext;
 
     connectedCallback(){
-        subscribe(this.MessageContext, MY_CHANNEL, (message) => {
+        if(!this.subscription){
+            this.subscription = subscribe(this.MessageContext, MY_CHANNEL, (message) => {
+                this.handleMessage(message)
+            });
+        }
+    }
+
+    handleMessage(message){
+        if(message.type == "PAGE"){
             this.currentPage = message.page;
-        });
+        }
     }
 
     navigatePage(event){

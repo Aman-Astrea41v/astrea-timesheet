@@ -1,53 +1,327 @@
-.report-grid {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+    min-height: 100vh;
+    color: #333;
+    line-height: 1.6;
+}
+
+.reports-header {
+    margin-bottom: 2rem;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #2c5aa0;
+    margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+    color: #6c757d;
+    font-size: 1rem;
+}
+
+.filters-panel {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+}
+
+.today-summary {
+    background: linear-gradient(135deg, #2c5aa0, #1e3a5f);
+    color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    display: none;
+}
+
+.today-summary.show {
+    display: block;
+}
+
+.summary-title {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.punch-times {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.punch-time {
+    text-align: center;
+}
+
+.punch-time-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.punch-time-label {
+    opacity: 0.9;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.summary-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    opacity: 0.9;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.15s ease;
+    background: white;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #2c5aa0;
+    box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.btn-primary {
+    background: #2c5aa0;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #1e3a5f;
+}
+
+.btn-primary:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #218838;
+}
+
+.btn-info {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-info:hover {
+    background: #138496;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+}
+
+/* Tables */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.data-table th,
+.data-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.data-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.data-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #6c757d;
+}
+
+.empty-state-title {
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+.card-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.card-body {
+    margin-top: 0.5rem;
+}
+
+.punch-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 2px 0;
+}
+
+.label {
+    font-weight: 600;
+    color: #555;
+}
+
+.filters-panel label {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.filters-panel select,
+.filters-panel input {
+    width: 100%;
+}
+
+.filters-panel button {
+    margin-right: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.cards-wrapper {
+    display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
     margin-top: 1rem;
 }
 
 .report-card {
-    background: #ffffff;
-    border-radius: 1rem;
+    flex: 1 1 calc(20% - 1rem); /* 5 cards per row */
+    min-width: 200px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     padding: 1rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    transition: transform 0.2s ease;
+    transition: transform 0.2s;
 }
 
 .report-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-3px);
 }
 
-.day-name {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #1c4b82;
-    margin-bottom: 0.25rem;
-}
-
-.date {
-    font-size: 0.9rem;
-    color: #6b7280;
-    margin-bottom: 0.75rem;
-}
-
-.time-row {
+.card-body .punch-row {
     display: flex;
     justify-content: space-between;
-    padding: 0.25rem 0;
-    font-size: 0.95rem;
-}
-
-.label {
-    font-weight: 500;
-    color: #374151;
+    margin-bottom: 0.5rem;
 }
 
 .value {
-    color: #111827;
+    font-weight: bold;
+    color: #2c3e50;
 }
 
-.error-text {
-    color: #e63946;
-    text-align: center;
-    margin-top: 1rem;
+.badge {
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #fff;
+}
+
+.badge.location {
+    background-color: #0070d2; /* blue */
+}
+
+.badge.status.ontime {
+    background-color: #28a745; /* green */
+}
+
+.badge.status.late {
+    background-color: #ff9800; /* orange */
+}
+
+/* Responsive for mobile */
+@media(max-width: 1000px){
+    .report-card {
+        flex: 1 1 calc(50% - 1rem); /* 2 cards per row */
+    }
+}
+
+@media(max-width: 600px){
+    .report-card {
+        flex: 1 1 100%; /* 1 card per row */
+    }
 }

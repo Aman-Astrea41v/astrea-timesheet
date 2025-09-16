@@ -1,26 +1,98 @@
 <template>
-    <lightning-card title="Last 5 Days Report" class="slds-p-around_medium">
-        <div class="report-grid">
-            <template if:true={reports.length}>
-                <template for:each={reports} for:item="day">
-                    <div key={day.date} class="report-card">
-                        <h2 class="day-name">{day.dayName}</h2>
-                        <p class="date">{day.date}</p>
-                        <div class="time-row">
-                            <span class="label">Login:</span>
-                            <span class="value">{day.login}</span>
+    <div id="reports" class="page">
+        <div class="reports-header">
+            <h1 class="page-title">Attendance Reports</h1>
+            <p class="page-subtitle">View and manage your punch in/out records</p>
+        </div>
+
+        <div class="today-summary show" id="todaySummary">
+            <h3 class="summary-title">Today's Attendance Summary</h3>
+            <div class="punch-times">
+                <div class="punch-time">
+                    <div class="punch-time-value" id="todayPunchIn">--:--</div>
+                    <div class="punch-time-label">Punch In</div>
+                </div>
+                <div class="punch-time">
+                    <div class="punch-time-value" id="todayPunchOut">--:--</div>
+                    <div class="punch-time-label">Punch Out</div>
+                </div>
+            </div>
+            <div class="summary-footer">
+                <div id="todayLocation">Work Location: Not Set</div>
+            </div>
+        </div>
+
+
+        <div class="filters-panel">
+            <div class="form-group" style="margin: 0; flex: 1;">
+                <label class="form-label">Filter by Date</label>
+                <input type="date" class="form-control" onchange={handleDateChange}>
+            </div>
+
+            <!-- Location Filter -->
+            <div class="form-group">
+                <label class="form-label">Location</label>
+                <select class="slds-select" onchange={handleLocationChange}>
+                    <option value="All">All</option>
+                    <option value="Office">Work from Office</option>
+                    <option value="Home">Work from Home</option>
+                </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="form-group">
+                <label class="form-label">Status</label>
+                <select class="slds-select" onchange={handleStatusChange}>
+                    <option value="All">All</option>
+                    <option value="On Time">On Time</option>
+                    <option value="Late">Late</option>
+                </select>
+            </div>
+
+            <!-- Quick Filter Buttons -->
+            <div class="form-group">
+                <button class="btn btn-info" onclick={showTodayReport}>Today</button>
+                <button class="btn btn-info" onclick={showThisWeek}>This Week</button>
+                <button class="btn btn-info" onclick={showLastWeek}>Last Week</button>
+                <button class="btn btn-primary" onclick={filterReports}>Apply Filter</button>
+            </div>
+
+        </div>
+
+        <div class="content-section">
+            <div class="section-header">
+                <h3 class="section-title">Attendance Records</h3>
+                <span class="total-badge">{recordsCount} Records</span>
+            </div>
+
+            <div class="cards-wrapper">
+                <template for:each={displayRecords} for:item="record">
+                    <div key={record.id} class="report-card">
+                        <div class="card-header">
+                            <h3>{record.day}, {record.date}</h3>
                         </div>
-                        <div class="time-row">
-                            <span class="label">Logout:</span>
-                            <span class="value">{day.logout}</span>
+                        <div class="card-body">
+                            <div class="punch-row">
+                                <span class="label">Punch In</span>
+                                <span class="value">{record.punchIn}</span>
+                            </div>
+                            <div class="punch-row">
+                                <span class="label">Punch Out</span>
+                                <span class="value">{record.punchOut}</span>
+                            </div>
+                            <div class="punch-row">
+                                <span class="label">Location</span>
+                                <span class="badge location">{record.location}</span>
+                            </div>
+                            <div class="punch-row">
+                                <span class="label">Status</span>
+                                <span class={record.statusClass}>{record.status}</span>
+                            </div>
                         </div>
                     </div>
                 </template>
-            </template>
+            </div>
 
-            <template if:false={reports.length}>
-                <p class="error-text">⚠ Error loading report.</p>
-            </template>
         </div>
-    </lightning-card>
+    </div>
 </template>

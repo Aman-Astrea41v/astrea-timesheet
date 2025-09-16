@@ -12,6 +12,7 @@ export default class Profile extends LightningElement {
             const email = await getCookies('email');
             const user = await getUsers({email: email});
             if(user){
+                this.user.abbreviation = user.First_Name__c.charAt(0) + user.Last_Name__c.charAt(0);
                 this.user.fname = user.First_Name__c;
                 this.user.lname = user.Last_Name__c;
                 this.user.email = user.Email__c;

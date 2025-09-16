@@ -1,65 +1,52 @@
 <template>
-    <div class="navbar">
-        <div class="left">
-            <span class="title">AstreaTSA</span>
-            <lightning-button label="Home" onclick={gotoHome}></lightning-button>
-            <lightning-button label="Profile" onclick={gotoProfile}></lightning-button>
-            <lightning-button label="Punch In/Out Report" onclick={gotoReport}></lightning-button>
-        </div>
-
-        <div class="right">
-            <lightning-button 
-                if:true={punchedIn}
-                variant="brand" 
-                label="Punch In"
-                onclick={openPunchForm}
-            ></lightning-button>
-
-            <lightning-button 
-                if:true={punchedOut}
-                variant="brand" 
-                label="Punch Out"
-                onclick={punchOutUser}
-            ></lightning-button>
-
-            <lightning-button 
-                class="btn-logout"
-                variant="brand" 
-                label="Log Out"
-                onclick={logOutUser}
-            ></lightning-button>
-
-        </div>
-
-        <template if:true={showPunchModal}>
-            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
-                <div class="slds-modal__container">
-
-                    <!-- Header -->
-                    <header class="slds-modal__header">
-                        <h2 class="slds-text-heading_medium">Punch In</h2>
-                    </header>
-
-                    <!-- Body -->
-                    <div class="slds-modal__content slds-p-around_medium">
-                        <lightning-radio-group
-                            label="Select Work Mode"
-                            options={options}
-                            value={workingMode}
-                            type="radio"
-                            onchange={handleOptionChange}>
-                        </lightning-radio-group>
-                    </div>
-
-                    <!-- Footer -->
-                    <footer class="slds-modal__footer">
-                        <lightning-button label="Cancel" onclick={closeModal}></lightning-button>
-                        <lightning-button variant="brand" label="Punch In" class="slds-m-left_small" onclick={punchInUser}></lightning-button>
-                    </footer>
+    <header class="header">
+        <nav class="navbar">
+            <a href="#" class="brand">TimeSheet Pro</a>
+            <div class="nav-left">
+                <button class="nav-btn active" onclick={gotoHome}>Dashboard</button>
+                <button if:true={punchedIn} class="nav-btn" id="punchInBtn" onclick={openPunchForm}>Punch In</button>
+                <button if:true={punchedOut} class="nav-btn" id="punchOutBtn" onclick={punchOutUser}>Punch Out</button>
+            </div>
+            <div class="user-menu">
+                <button class="user-btn" onclick={toggleUserDropdown}>
+                    Aman Rehman
+                </button>
+                <div class="dropdown-menu" id="userDropdown" if:true={userDropdown}>
+                    <div class="dropdown-item" onclick={gotoProfile}>Profile</div>
+                    <div class="dropdown-item" onclick={gotoReport}>Reports</div>
+                    <div class="dropdown-item" onclick={logOutUser}>Logout</div>
                 </div>
-            </section>
-            <div class="slds-backdrop slds-backdrop_open"></div>
-        </template>
+            </div>
+        </nav>
+    </header>
 
+    <div class="modal" id="punchModal" if:true={showPunchModal}>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="punchModalTitle">Punch In</h3>
+                <button class="modal-close" onclick={closeModal}>&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" id="workLocationGroup">
+                    <label class="form-label">Select Work Location</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="workingMode" value="WFH" id="workHome" onchange={handleOptionChange}>
+                            <label for="workHome">Work from Home</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="workingMode" value="WFO" id="workOffice" onchange={handleOptionChange}>
+                            <label for="workOffice">Work from Office</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick={closeModal}>Cancel</button>
+                <button class="btn btn-primary" onclick={punchInUser}>
+                    <span id="punchActionText">Punch In</span>
+                </button>
+            </div>
+        </div>
     </div>
 </template>

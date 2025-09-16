@@ -1,96 +1,124 @@
 <template>
-    <div class="taskbar">
+     <div id="home" class="page">
+            <div class="dashboard-grid">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Today's Tasks</h2>
+                        <button class="btn btn-success" id="addTaskBtn" onclick={openTaskForm} disabled={disableTaskBtn}>
+                            {taskButtonTitle}
+                        </button>
+                    </div>
+                    <div class="section-content">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Task Title</th>
+                                    <th>Time Range</th>
+                                    <th>Duration</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
 
-        <div class="add-wrapper">
-            <lightning-button 
-                class="btn-add-task" 
-                variant="brand" 
-                label="Add Task" 
-                onclick={openTaskForm}>
-            </lightning-button>
+                            <tbody id="tasksTableBody" if:true={tasks.length}>
+                                <template for:each={tasks} for:item="task">
+                                    <tr key={task.id}>
+                                        <td class="font-weight-bold">{task.title}</td>
+                                        <td><code>{task.startTime} - {task.endTime}</code></td>
+                                        <td>
+                                            <span class="status-badge status-in">
+                                                {task.formattedDuration}
+                                            </span>
+                                        </td>
+                                        <td class="text-muted">{task.description}</td>
+                                        <td>
+                                            <button class="btn btn-primary" onclick={editTask} data-id={task.id}>Edit</button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
 
-            <div class="current-datetime">
-                {currentDateTime}
+                            <tbody id="tasksTableBodyEmpty" if:false={tasks.length}>
+                                <tr>
+                                    <td colspan="4" class="empty-state">
+                                        <div class="empty-state-title">No tasks recorded</div>
+                                        <div>Click "Add Task" to start tracking your work</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="status-panel status-pending" id="statusPanel">
+                    <div class="status-indicator">Waiting</div>
+                    <div class="status-text" id="statusText">Not Started</div>
+                    <div class="status-detail" id="statusDetail">Please punch in to begin</div>
+                    <div class="status-time" id="statusTime"></div>
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #dee2e6;">
+                        <div class="text-muted" style="font-size: 0.875rem;">Daily Total</div>
+                        <div class="font-weight-bold" style="color: #2c5aa0;" id="dailyTotal">0h 0m</div>
+                    </div>
+                </div>
+
             </div>
-
-            <lightning-input 
-                type="date" 
-                label="Select Date" 
-                value={selectedDate} 
-                onchange={handleDateChange}>
-            </lightning-input>
-
-            <lightning-button 
-                variant="neutral" 
-                label="Today" 
-                onclick={getTodaysTask}>
-            </lightning-button>
         </div>
 
-        <!-- Modal for Task Form -->
-        <template if:true={showTaskForm}>
-            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
-                <div class="slds-modal__container">
-                    <header class="slds-modal__header">
-                        <h2 class="slds-text-heading_medium">{modalTitle}</h2>
-                    </header>
 
-                    <div class="slds-modal__content slds-p-around_medium">
-                        <lightning-input 
-                            label="Task Title" 
-                            value={newTask.task} 
-                            onchange={handleTaskChange}>
-                        </lightning-input>
-
-                        <lightning-input 
-                            type="time" 
-                            label="Time" 
-                            value={newTask.time} 
-                            onchange={handleTimeChange}>
-                        </lightning-input>
-
-                        <lightning-textarea 
-                            label="Description" 
-                            value={newTask.description} 
-                            onchange={handleDescChange}>
-                        </lightning-textarea>
+        <div class="modal" id="taskModal" if:true={showTaskForm}>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">{modalTitle}</h3>
+                <button class="modal-close" onclick={closeTaskForm}>&times;</button>
+            </div>
+            <form id="taskForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Task Title</label>
+                        <input type="text" class="form-control" id="taskTitle" placeholder="Enter task title" value={newTask.title} onchange={handleTitleChange} required>
                     </div>
-
-                    <footer class="slds-modal__footer">
-                        <lightning-button 
-                            label="Cancel" 
-                            onclick={closeTaskForm}>
-                        </lightning-button>
-                        <lightning-button 
-                            variant="brand" 
-                            label="Save" 
-                            class="slds-m-left_small" 
-                            onclick={saveTask}>
-                        </lightning-button>
-                    </footer>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Duration & Time Range</label>
+                        <div class="time-inputs">
+                            <div>
+                                <label class="form-label" style="font-size: 0.875rem; margin-bottom: 0.25rem;">Hours</label>
+                                <select class="form-control" id="taskHours" data-id="taskHours" onchange={updateTaskTimes} value={Modalhours}>
+                                    <template for:each={hours} for:item="h">
+                                        <option key={h} value={h}>{h} Hours</option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label" style="font-size: 0.875rem; margin-bottom: 0.25rem;">Minutes</label>
+                                <select class="form-control" id="taskMinutes" data-id="taskMinutes" onchange={updateTaskTimes} value={Modalminutes}>
+                                    <template for:each={minutes} for:item="m">
+                                        <option key={m} value={m}>{m} Minutes</option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label" style="font-size: 0.875rem; margin-bottom: 0.25rem;">From</label>
+                                <div class="time-display" id="taskFrom">{newTask.startTime}</div>
+                            </div>
+                            <div>
+                                <label class="form-label" style="font-size: 0.875rem; margin-bottom: 0.25rem;">To</label>
+                                <div class="time-display" id="taskTo">{newTask.endTime}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" id="taskDescription" rows="3" placeholder="Describe the work performed (optional)" onchange={handleDescChange}>{newTask.description}</textarea>
+                    </div>
                 </div>
-            </section>
-            <div class="slds-backdrop slds-backdrop_open"></div>
-        </template>
-
-        <!-- Datatable -->
-        <template if:true={tasks.length}>
-            <lightning-card title="Tasks" class="slds-m-top_medium">
-                <lightning-datatable
-                    key-field="id"
-                    data={tasks}
-                    show-row-number-column="true"
-                    columns={columns}
-                    hide-checkbox-column
-                    onrowaction={handleRowAction}>
-                </lightning-datatable>
-            </lightning-card>
-        </template>
-
-        <lightning-card title="Tasks" class="slds-m-top_medium" if:false={tasks.length}>
-            <p class="no-task-text">No task for {selectedDate} Found.</p>
-        </lightning-card>
-
-        
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick={closeTaskForm}>Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick={saveTask}>Save Task</button>
+                </div>
+            </form>
+        </div>
     </div>
+
 </template>
