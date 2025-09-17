@@ -4,7 +4,7 @@
                 <div class="content-section">
                     <div class="section-header">
                         <h2 class="section-title">Today's Tasks</h2>
-                        <button class="btn btn-success" id="addTaskBtn" onclick={openTaskForm} disabled={disableTaskBtn}>
+                        <button class="btn btn-success" id="addTaskBtn" onclick={openTaskForm} disabled={disableTaskButton}>
                             {taskButtonTitle}
                         </button>
                     </div>
@@ -50,14 +50,14 @@
                     </div>
                 </div>
 
-                <div class="status-panel status-pending" id="statusPanel">
-                    <div class="status-indicator">Waiting</div>
-                    <div class="status-text" id="statusText">Not Started</div>
-                    <div class="status-detail" id="statusDetail">Please punch in to begin</div>
-                    <div class="status-time" id="statusTime"></div>
+                <div class={statusPanel.class} id="statusPanel">
+                    <div class="status-indicator">{statusPanel.indicator}</div>
+                    <div class="status-text" id="statusText">{statusPanel.text}</div>
+                    <div class="status-detail" id="statusDetail">{statusPanel.workType}</div>
+                    <div class="status-time" id="statusTime">{statusPanel.punchTime}</div>
                     <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #dee2e6;">
                         <div class="text-muted" style="font-size: 0.875rem;">Daily Total</div>
-                        <div class="font-weight-bold" style="color: #2c5aa0;" id="dailyTotal">0h 0m</div>
+                        <div class="font-weight-bold" style="color: #2c5aa0;" id="dailyTotal">{statusPanel.dailyTotal}</div>
                     </div>
                 </div>
 

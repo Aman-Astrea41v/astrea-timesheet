@@ -1,7 +1,9 @@
 import { LightningElement, wire } from 'lwc';
 import MY_CHANNEL from "@salesforce/messageChannel/MyChannel__c";
 import { publish, MessageContext } from 'lightning/messageService';
-import { removeCookies } from 'c/utils';
+import { removeCookies, getCookies, showAlert } from 'c/utils';
+import punchInUserApex from '@salesforce/apex/Reports.punchInUserApex';
+import punchOutUserApex from '@salesforce/apex/Reports.punchOutUserApex';
 
 export default class Navbar extends LightningElement {
     showPunchModal = false;
@@ -14,6 +16,22 @@ export default class Navbar extends LightningElement {
     @wire(MessageContext)
     messageContext
 
+
+    async connectedCallback(){
+        // Managing Status Panel and Punch In Status
+        const uid = await getCookies('uid');
+        const specificDate = new Date().toISOString().split('T')[0];
+        const reportData = await getUserPunchStatus({userId:uid,specificDate:specificDate});
+
+        if(reportData.punchedIn == 'true' && reportData.punchedOut == 'false'){
+            this.punchedIn = false;
+            this.punchedOut = true;
+        }
+        else{
+            this.punchedIn = false;
+            this.punchedOut = false;
+            }
+    }   
 
     openPunchForm(){
         this.showPunchModal = true;
@@ -32,16 +50,57 @@ export default class Navbar extends LightningElement {
         this.showPunchModal = false;
     }
 
-    punchInUser(){
-        this.punchedIn = false;
-        this.punchedOut = true;
-        this.showPunchModal = false;
-        publish(this.messageContext, MY_CHANNEL, {type: 'PUNCHIN' ,disableTask: this.punchedIn, time: new Date().toLocaleString()});
+    async punchInUser(){
+        try{
+            this.punchedIn = false;
+            this.punchedOut = true;
+            this.showPunchModal = false;
+            const uid = await getCookies('uid');
+            publish(this.messageContext, MY_CHANNEL, {type: 'PUNCHIN' ,disableTask: this.punchedIn, time: new Date().toLocaleString(), workMode: this.workingMode});
+
+            // Storing in Apex
+            const response = await punchInUserApex({
+                punchInTime: (new Date().toLocaleTimeString('en-GB', { 
+                timeZone: 'Asia/Kolkata', 
+                hour12: false 
+                })),
+                userId: uid,
+                specificDate: (new Date().toISOString().split('T')[0]),
+                workMode: this.workingMode
+            });
+
+            if(response){
+                await showAlert('Success', 'Punched In Successfully', 'success');
+            }
+            else{
+                await showAlert('Error!', 'Punched In Failed', 'error');
+            }
+        }
+        catch(err){
+            console.log('Error from Navbar: ',err);
+        }
     }
 
-    punchOutUser(){
+    async punchOutUser(){
         this.punchedOut = false;
-        publish(this.messageContext, MY_CHANNEL, {type: 'PUNCHOUT' ,disableTask: true, time: new Date().toLocaleString()});
+        const uid = await getCookies('uid');
+        publish(this.messageContext, MY_CHANNEL, {type: 'PUNCHOUT' ,disableTask: true, time: new Date().toLocaleString(), workMode: this.workingMode});
+        
+        // Updating punchOut Time
+        const response = await punchOutUserApex({
+            punchOutTime: (new Date().toLocaleTimeString('en-GB', { 
+                timeZone: 'Asia/Kolkata', 
+                hour12: false 
+                })),
+            userId: uid,
+            specificDate: (new Date().toISOString().split('T')[0])
+        })
+        if(response){
+                await showAlert('Success', 'Punched Out Successfully', 'success');
+            }
+            else{
+                await showAlert('Error!', 'Punched Out Failed', 'error');
+            }
     }
 
     async logOutUser(){
