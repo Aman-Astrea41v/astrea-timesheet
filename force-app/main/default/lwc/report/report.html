@@ -9,33 +9,29 @@
             <h3 class="summary-title">Today's Attendance Summary</h3>
             <div class="punch-times">
                 <div class="punch-time">
-                    <div class="punch-time-value" id="todayPunchIn">--:--</div>
+                    <div class="punch-time-value" id="todayPunchIn">{reportStatus.punchInTime}</div>
                     <div class="punch-time-label">Punch In</div>
                 </div>
                 <div class="punch-time">
-                    <div class="punch-time-value" id="todayPunchOut">--:--</div>
+                    <div class="punch-time-value" id="todayPunchOut">{reportStatus.punchOutTime}</div>
                     <div class="punch-time-label">Punch Out</div>
                 </div>
             </div>
             <div class="summary-footer">
-                <div id="todayLocation">Work Location: Not Set</div>
+                <div id="todayLocation">Work Location: {reportStatus.workMode}</div>
             </div>
         </div>
 
 
         <div class="filters-panel">
-            <div class="form-group" style="margin: 0; flex: 1;">
-                <label class="form-label">Filter by Date</label>
-                <input type="date" class="form-control" onchange={handleDateChange}>
-            </div>
 
             <!-- Location Filter -->
             <div class="form-group">
                 <label class="form-label">Location</label>
                 <select class="slds-select" onchange={handleLocationChange}>
                     <option value="All">All</option>
-                    <option value="Office">Work from Office</option>
-                    <option value="Home">Work from Home</option>
+                    <option value="Work from Office">Work from Office</option>
+                    <option value="Work from Home">Work from Home</option>
                 </select>
             </div>
 
@@ -51,22 +47,20 @@
 
             <!-- Quick Filter Buttons -->
             <div class="form-group">
-                <button class="btn btn-info" onclick={showTodayReport}>Today</button>
-                <button class="btn btn-info" onclick={showThisWeek}>This Week</button>
-                <button class="btn btn-info" onclick={showLastWeek}>Last Week</button>
-                <button class="btn btn-primary" onclick={filterReports}>Apply Filter</button>
+                <button class="btn btn-info" onclick={setThisWeekReport}>This Week</button>
+                <button class="btn btn-info" onclick={setLastWeekReport}>Last Week</button>
             </div>
 
         </div>
 
         <div class="content-section">
             <div class="section-header">
-                <h3 class="section-title">Attendance Records</h3>
-                <span class="total-badge">{recordsCount} Records</span>
+                <h3 class="section-title">Total Report</h3>
+                <span class="total-badge">{recordsCount} Reports</span>
             </div>
 
             <div class="cards-wrapper">
-                <template for:each={displayRecords} for:item="record">
+                <template for:each={allReports} for:item="record">
                     <div key={record.id} class="report-card">
                         <div class="card-header">
                             <h3>{record.day}, {record.date}</h3>

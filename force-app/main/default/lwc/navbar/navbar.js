@@ -1,16 +1,18 @@
 import { LightningElement, wire } from 'lwc';
 import MY_CHANNEL from "@salesforce/messageChannel/MyChannel__c";
 import { publish, MessageContext } from 'lightning/messageService';
-import { removeCookies, getCookies, showAlert } from 'c/utils';
+import { removeCookies, getCookies, showAlert, checkForPunchOutIs9Hour } from 'c/utils';
 import punchInUserApex from '@salesforce/apex/Reports.punchInUserApex';
 import punchOutUserApex from '@salesforce/apex/Reports.punchOutUserApex';
+import getUserPunchStatus from '@salesforce/apex/Reports.getUserPunchStatus';
 
 export default class Navbar extends LightningElement {
     showPunchModal = false;
     workingMode;
-    punchedIn = true;
-    punchedOut = false;
+    punchedIn;
+    punchedOut;
     userDropdown = false;
+    punchInTime;
 
     // Create Context
     @wire(MessageContext)
@@ -18,19 +20,31 @@ export default class Navbar extends LightningElement {
 
 
     async connectedCallback(){
-        // Managing Status Panel and Punch In Status
-        const uid = await getCookies('uid');
-        const specificDate = new Date().toISOString().split('T')[0];
-        const reportData = await getUserPunchStatus({userId:uid,specificDate:specificDate});
+        try{
+            // Managing Status Panel and Punch In Status
+            const uid = await getCookies('uid');
+            const specificDate = new Date().toISOString().split('T')[0];
 
-        if(reportData.punchedIn == 'true' && reportData.punchedOut == 'false'){
-            this.punchedIn = false;
-            this.punchedOut = true;
-        }
-        else{
-            this.punchedIn = false;
-            this.punchedOut = false;
+            const reportData = await getUserPunchStatus({userId:uid,specificDate:specificDate});
+            this.punchInTime = reportData.punchInTime;
+            if(reportData.punchedIn == 'true' && reportData.punchedOut == 'false'){
+                this.punchedIn = false;
+                this.punchedOut = true;
             }
+
+            else if(reportData.punchedIn == 'false' && reportData.punchedOut == 'false'){
+                this.punchedIn = true;
+                this.punchedOut = false;
+            }
+            else if(reportData.punchedIn == 'true' && reportData.punchedOut == 'true'){
+                this.punchedIn = false;
+                this.punchedOut = false;
+            }
+        }   
+        catch(err){
+            console.log('Parsed Error from Navbar: ',JSON.stringify(err));
+            console.log('Error Message from Navbar: ',err?.message);
+        }
     }   
 
     openPunchForm(){
@@ -77,7 +91,7 @@ export default class Navbar extends LightningElement {
             }
         }
         catch(err){
-            console.log('Error from Navbar: ',err);
+            console.log('Error from Navbar: ',JSON.stringify(err));
         }
     }
 
@@ -86,6 +100,13 @@ export default class Navbar extends LightningElement {
         const uid = await getCookies('uid');
         publish(this.messageContext, MY_CHANNEL, {type: 'PUNCHOUT' ,disableTask: true, time: new Date().toLocaleString(), workMode: this.workingMode});
         
+        let punchOutTime = (new Date().toLocaleTimeString('en-GB', { 
+            timeZone: 'Asia/Kolkata', 
+            hour12: false 
+        }))
+
+        let status = checkForPunchOutIs9Hour(this.punchInTime,punchOutTime) ? 'On Time' : 'Late';
+        
         // Updating punchOut Time
         const response = await punchOutUserApex({
             punchOutTime: (new Date().toLocaleTimeString('en-GB', { 
@@ -93,7 +114,8 @@ export default class Navbar extends LightningElement {
                 hour12: false 
                 })),
             userId: uid,
-            specificDate: (new Date().toISOString().split('T')[0])
+            specificDate: (new Date().toISOString().split('T')[0]),
+            status: status
         })
         if(response){
                 await showAlert('Success', 'Punched Out Successfully', 'success');

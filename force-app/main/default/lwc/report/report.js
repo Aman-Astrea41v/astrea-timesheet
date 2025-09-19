@@ -1,78 +1,124 @@
 import { LightningElement,track } from 'lwc';
+import { getCookies, msToTime } from 'c/utils';
+// Report Class
+import getUserPunchStatus from '@salesforce/apex/Reports.getUserPunchStatus';
+import getReportForThisWeek from '@salesforce/apex/Reports.getReportForThisWeek';
+import getReportForLastWeek from '@salesforce/apex/Reports.getReportForLastWeek';
+import getReportByStatus from '@salesforce/apex/Reports.getReportByStatus';
+import getReportByWorkMode from '@salesforce/apex/Reports.getReportByWorkMode';
 
 export default class Report extends LightningElement {
     @track selectedDate;
     @track displayRecords = [];
 
+    @track reportStatus = { punchInTime: '--:--' , punchOutTime: '--:--', workMode: '' };
     
-    
-    allReports = [
-        { id: 1, date: '2025-09-15', day: 'Monday', punchIn: '09:15 AM', punchOut: '06:05 PM', location: 'Office HQ', status: 'On Time' },
-        { id: 2, date: '2025-09-14', day: 'Sunday', punchIn: '10:10 AM', punchOut: '05:30 PM', location: 'Remote', status: 'Late' },
-        { id: 3, date: '2025-09-13', day: 'Saturday', punchIn: '09:05 AM', punchOut: '06:00 PM', location: 'Office HQ', status: 'On Time' },
-        { id: 4, date: '2025-09-12', day: 'Friday', punchIn: '09:20 AM', punchOut: '06:10 PM', location: 'Office HQ', status: 'Late' },
-        { id: 5, date: '2025-09-11', day: 'Thursday', punchIn: '09:00 AM', punchOut: '05:55 PM', location: 'Remote', status: 'On Time' },
-        { id: 6, date: '2025-09-10', day: 'Wednesday', punchIn: '09:30 AM', punchOut: '06:15 PM', location: 'Office HQ', status: 'Late' },
-        { id: 7, date: '2025-09-09', day: 'Tuesday', punchIn: '09:10 AM', punchOut: '05:45 PM', location: 'Office HQ', status: 'On Time' }
-    ];
+    @track allReports = [];
 
-    connectedCallback() {
-        let filtered = this.allReports.slice(0, 7);
+    async connectedCallback() {
+        try{
+            const uid = await getCookies('uid');
+            const specificDate = new Date().toISOString().split('T')[0];
+            const reportData = await getUserPunchStatus({userId: uid,specificDate:specificDate});
+            
+            this.reportStatus = {
+                punchInTime: reportData?.punchedIn == 'true' ? reportData?.punchInTime.split('.')[0]: '--:--',
+                punchOutTime: reportData?.punchedOut == 'true' ? reportData?.punchOutTime.split('.')[0] : '--:--',
+                workMode: reportData?.workMode
+            }
 
-        let workingDays = this.getWorkingDays(filtered, 5);
+            this.setThisWeekReport();
+        }
+        catch(err){
+            console.log('Error from Report: ',JSON.stringify(err));
+            console.log('Error Message from Report: ',err?.message);
+        }
 
-        this.displayRecords = workingDays.map(record => ({
-            ...record,
-            statusClass: record.status === 'Late' ? 'badge status late' : 'badge status ontime',
-            locationClass: 'badge location'
-        }));
     }
 
-    
+
+    updateReport(reports){
+        this.allReports = [];
+        reports.map(report => {
+            let day = new Date(report.Date__c).toLocaleDateString('en-US', { weekday: 'long' });
+            this.allReports.push({
+                id: report.Id,
+                date: report.Date__c,
+                day: day,
+                punchIn: report.Punch_In__c ? msToTime(report.Punch_In__c): '--:--',
+                punchOut: report.Punch_Out__c ? msToTime(report.Punch_Out__c) : '--:--',
+                location: report.Work_Mode__c,
+                status: report.Status__c,
+                statusClass: report.Status__c == "Late" ? "badge status late" : "badge status ontime"
+            })
+        })
+        console.log(JSON.stringify(this.allReports));
+    }
+
+
+    // Filtering Methods
+    async setLastWeekReport(){
+        try{
+            const uid = await getCookies('uid');
+            
+            const reports = await getReportForLastWeek({userId: uid});
+            
+            await this.updateReport(reports);
+        }
+        catch(err){
+            console.log('Error from Report: ',JSON.stringify(err));
+            console.log('Error Message from Report: ',err?.message);
+        }
+    }
+
+    async setThisWeekReport(){
+        try{
+            const uid = await getCookies('uid');
+            
+            const reports = await getReportForThisWeek({userId: uid});
+            
+            this.updateReport(reports);
+        }
+        catch(err){
+            console.log('Error from Report: ',JSON.stringify(err));
+            console.log('Error Message from Report: ',err?.message);
+        }
+    }
+
+    async handleStatusChange(event){
+        try{
+            const uid = await getCookies('uid');
+            
+            const reports = await getReportByStatus({userId:uid,status: event.target.value});
+            
+            this.updateReport(reports);
+        }
+        catch(err){
+            console.log('Error from Report: ',JSON.stringify(err));
+            console.log('Error Message from Report: ',err?.message);
+        }
+    }
+
+    async handleLocationChange(event){
+        try{
+            const uid = await getCookies('uid');
+            
+            const reports = await getReportByWorkMode({userId:uid,workMode: event.target.value});
+            
+            this.updateReport(reports);
+        }
+        catch(err){
+            console.log('Error from Report: ',JSON.stringify(err));
+            console.log('Error Message from Report: ',err?.message);
+        }
+    }
 
     get recordsCount() {
-        return this.displayRecords.length;
+        return this.allReports.length;
     }
 
     handleDateChange(event) {
         this.selectedDate = event.target.value;
-    }
-
-    filterReports() {
-        if (this.selectedDate) {
-            const index = this.allReports.findIndex(
-                rec => rec.date === this.selectedDate
-            );
-
-            if (index !== -1) {
-                let filtered = this.allReports.slice(index, index + 7); // take a bigger slice
-                this.displayRecords = this.getWorkingDays(filtered, 5);
-            } else {
-                this.displayRecords = [];
-            }
-        }
-    }
-
-    showTodayReport() {
-        const today = '2025-09-15'; // hardcoded for now
-        this.selectedDate = today;
-        this.filterReports();
-    }
-
-    setDefaultRecords() {
-        let filtered = this.allReports.slice(0, 7); // take latest week
-        this.displayRecords = this.getWorkingDays(filtered, 5);
-    }
-
-    // Helper → only Mon–Fri
-    getWorkingDays(records, limit) {
-        return records
-            .filter(rec => rec.day !== 'Saturday' && rec.day !== 'Sunday')
-            .slice(0, limit);
-    }
-
-    getStatusClass(status) {
-        return status === 'Late' ? 'badge status late' : 'badge status ontime';
     }
 
 }

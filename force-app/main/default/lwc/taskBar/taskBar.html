@@ -40,7 +40,7 @@
 
                             <tbody id="tasksTableBodyEmpty" if:false={tasks.length}>
                                 <tr>
-                                    <td colspan="4" class="empty-state">
+                                    <td colspan="5" class="empty-state">
                                         <div class="empty-state-title">No tasks recorded</div>
                                         <div>Click "Add Task" to start tracking your work</div>
                                     </td>
@@ -83,17 +83,17 @@
                         <div class="time-inputs">
                             <div>
                                 <label class="form-label" style="font-size: 0.875rem; margin-bottom: 0.25rem;">Hours</label>
-                                <select class="form-control" id="taskHours" data-id="taskHours" onchange={updateTaskTimes} value={Modalhours}>
-                                    <template for:each={hours} for:item="h">
-                                        <option key={h} value={h}>{h} Hours</option>
+                                <select class="form-control" id="taskHours" data-id="taskHours" onchange={updateTaskTimes}>
+                                    <template for:each={hoursOptions} for:item="h">
+                                        <option key={h.value} value={h.value} selected={h.selected}>{h.label}</option>
                                     </template>
                                 </select>
                             </div>
                             <div>
                                 <label class="form-label" style="font-size: 0.875rem; margin-bottom: 0.25rem;">Minutes</label>
-                                <select class="form-control" id="taskMinutes" data-id="taskMinutes" onchange={updateTaskTimes} value={Modalminutes}>
-                                    <template for:each={minutes} for:item="m">
-                                        <option key={m} value={m}>{m} Minutes</option>
+                                <select class="form-control" id="taskMinutes" data-id="taskMinutes" onchange={updateTaskTimes}>
+                                    <template for:each={minutesOptions} for:item="m">
+                                        <option key={m.value} value={m.value} selected={m.selected}>{m.label}</option>
                                     </template>
                                 </select>
                             </div>

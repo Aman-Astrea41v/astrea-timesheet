@@ -1,6 +1,6 @@
 public with sharing class Tasks {
     
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<Task__c> getAllTasks(String userId,String specificDate){
         try {
             Date taskDate = Date.valueOf(specificDate);
@@ -50,8 +50,48 @@ public with sharing class Tasks {
         }
         catch(Exception e){
             System.debug('Error in createTask: ' + e.getMessage());
-            throw new AuraHandledException(e.getMessage());
-            // return false;
+            // throw new AuraHandledException(e.getMessage());
+            return false;
+        }
+    }
+
+    @AuraEnabled
+    public static Boolean updateTask(String taskId,String taskName,String taskDescription,Integer Duration,String startTime , String endTime){
+        try {
+            Task__c existingTask = [SELECT Id, Name, Duration__c,StartTime__c,EndTime__c, Description__c FROM Task__c WHERE Id =:taskId LIMIT 1];
+
+            if(existingTask != null){
+                // Parsing Format
+                Time sTime = Time.newInstance(
+                    Integer.valueOf(startTime.split(':')[0]),
+                    Integer.valueOf(startTime.split(':')[1]),
+                    Integer.valueOf(startTime.split(':')[2]),
+                    0
+                );
+
+                Time eTime = Time.newInstance(
+                    Integer.valueOf(endTime.split(':')[0]),
+                    Integer.valueOf(endTime.split(':')[1]),
+                    Integer.valueOf(endTime.split(':')[2]),
+                    0
+                );
+
+
+                existingTask.Name = taskName;
+                existingTask.Description__c = taskDescription;
+                existingTask.Duration__c = Duration;
+                existingTask.StartTime__c = sTime;
+                existingTask.EndTime__c = eTime;
+                update existingTask;
+                return true;
+            }
+            else{
+                return false;
+            }
+            
+        } catch (Exception e) {
+            // throw new AuraHandledException(e.getMessage());
+            return false;
         }
     }
 }
