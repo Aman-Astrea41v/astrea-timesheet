@@ -4,6 +4,12 @@
                 <div class="content-section">
                     <div class="section-header">
                         <h2 class="section-title">Today's Tasks</h2>
+
+                        <div class="task-filter-panel">
+                            <input type="date" class="filter-date-task" value={selectedDate} onchange={filterTaskByDate}>
+                            <button class="btn btn-info" onclick={getTodaysTask}>Today</button>
+                        </div>
+
                         <button class="btn btn-success" id="addTaskBtn" onclick={openTaskForm} disabled={disableTaskButton}>
                             {taskButtonTitle}
                         </button>

@@ -12,7 +12,6 @@ import getUserPunchStatus from '@salesforce/apex/Reports.getUserPunchStatus';
 export default class taskBar extends LightningElement {
     // Initialize Variables
     selectedDate;
-    isToday = false;
     subscription;
     formattedDuration = '';
     Modalhours = 0;
@@ -48,11 +47,14 @@ export default class taskBar extends LightningElement {
             let dailyTotal = await getCookies('dailyTotal'+uid);
             const specificDate = new Date().toISOString().split('T')[0];
             const reportData = await getUserPunchStatus({userId:uid,specificDate:specificDate});
-
+            
+            if(dailyTotal == null){
+                dailyTotal = this.formatDuration(0);
+            }
             if(reportData.punchedIn == 'true' && reportData.punchedOut == 'false'){
                 this.isPunchedIn = true;
-                
-                this.punchInTime = reportData.punchInTime.split('.')[0];
+                this.punchInTime = reportData?.punchInTime.split('.')[0]
+
                 this.startTimePerTask = this.calculateStartTime(this.punchInTime,dailyTotal);
 
                 this.statusPanel = { class: 'status-panel status-active', indicator: 'Active', text: 'Currently Working',workType:reportData.workMode,punchTime:'Started : ' + this.punchInTime ,dailyTotal: dailyTotal
@@ -60,17 +62,18 @@ export default class taskBar extends LightningElement {
             }
             else if(reportData.punchedIn == 'false' && reportData.punchedOut == 'false'){
                 this.isPunchedIn = false;
-                this.statusPanel = { class: 'status-panel status-pending', indicator: 'Waiting', text: 'Not Started',workType:'Please punch in to begin',punchTime: '' ,dailyTotal: '0h 0m' };
+                this.statusPanel = { class: 'status-panel status-pending', indicator: 'Waiting', text: 'Not Started',workType:'Please punch in to begin',punchTime: '' ,dailyTotal: '0 H 0 M' };
             }
             else{
                 this.isPunchedIn = false;
-                this.punchOutTime = reportData.punchOutTime.split('.')[0];
+                this.punchOutTime = reportData?.punchOutTime.split('.')[0];
                 this.statusPanel = { class: 'status-panel status-inactive', indicator: 'Completed', text: 'Day Completed',workType:reportData.workMode,punchTime:'Ended : ' + this.punchOutTime ,dailyTotal: dailyTotal
                 }
             }
         }
         catch(err){
             console.log('Error from TaskBar ConnectedCallback: ',JSON.stringify(err));
+            console.log('Error from TaskBar ConnectedCallback: ',err?.message);
         }
 
     }
@@ -131,20 +134,51 @@ export default class taskBar extends LightningElement {
         // Getting user Id to get related Tasks
         const uid = await getCookies('uid');
         let today = new Date().toISOString().split('T')[0]; 
-        const tasks = await getAllTasks({userId: uid, specificDate: today});
-        this.tasks = [];
-        if(tasks.length > 0){
-            tasks.map((task) => {
-                this.tasks.push({
-                    id: task.Id,
-                    title: task.Name,
-                    duration: task.Duration__c,
-                    startTime: msToTime(task.StartTime__c),
-                    endTime: msToTime(task.EndTime__c),
-                    formattedDuration: this.formatDuration(task.Duration__c),
-                    description: task.Description__c
+        if(this.selectedDate != today){
+            this.selectedDate = today;
+            const tasks = await getAllTasks({userId: uid, specificDate: today});
+            this.tasks = [];
+            if(tasks.length > 0){
+                tasks.map((task) => {
+                    this.tasks.push({
+                        id: task.Id,
+                        title: task.Name,
+                        duration: task.Duration__c,
+                        startTime: msToTime(task.StartTime__c),
+                        endTime: msToTime(task.EndTime__c),
+                        formattedDuration: this.formatDuration(task.Duration__c),
+                        description: task.Description__c
+                    })
                 })
-            })
+            }
+        }
+    }
+
+
+    async filterTaskByDate(event){
+        try{
+            const uid = await getCookies('uid');
+            if(this.selectedDate != event.target.value){
+                this.selectedDate = event.target.value;       
+                const tasks = await getAllTasks({userId: uid, specificDate: this.selectedDate});
+                this.tasks = [];
+                if(tasks.length > 0){
+                    tasks.map((task) => {
+                        this.tasks.push({
+                            id: task.Id,
+                            title: task.Name,
+                            duration: task.Duration__c,
+                            startTime: msToTime(task.StartTime__c),
+                            endTime: msToTime(task.EndTime__c),
+                            formattedDuration: this.formatDuration(task.Duration__c),
+                            description: task.Description__c
+                        })
+                    })
+                }
+            }
+        }
+        catch(err){
+            console.log('Error from TaskBar: ',JSON.stringify(err));
         }
     }
 
@@ -185,8 +219,6 @@ export default class taskBar extends LightningElement {
     editTask(event){
         this.showTaskForm = true;
         this.isEdit = true;
-        console.log(this.Modalhours);
-        console.log(this.Modalminutes);
         this.tasks.map(task => {
             if(task.id == event.target.dataset.id){
                 this.newTask = task;
@@ -291,6 +323,7 @@ export default class taskBar extends LightningElement {
             await this.updateTask();
             this.statusPanel.dailyTotal = this.formatDuration(this.tasks.reduce((acc, task) => acc + task.duration, 0));
             await setCookies('dailyTotal'+ uid, this.statusPanel.dailyTotal);
+            this.selectedDate = null;
             this.closeTaskForm();
         }
         catch(err){

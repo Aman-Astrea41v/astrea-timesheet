@@ -5,7 +5,7 @@
             <div class="nav-left">
                 <button class="nav-btn active" onclick={gotoHome}>Dashboard</button>
                 <button if:true={punchedIn} class="nav-btn" id="punchInBtn" onclick={openPunchForm}>Punch In</button>
-                <button if:true={punchedOut} class="nav-btn" id="punchOutBtn" onclick={punchOutUser}>Punch Out</button>
+                <button if:true={punchedOut} class="nav-btn" id="punchOutBtn" onclick={checkUserPunchHour}>Punch Out</button>
             </div>
             <div class="user-menu">
                 <button class="user-btn" onclick={toggleUserDropdown}>
@@ -49,4 +49,29 @@
             </div>
         </div>
     </div>
+
+    <!-- Warning Modal  -->
+    <div class="modal" if:true={showWarning}>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title-warning">Warning</h3>
+                <button class="modal-close" onclick={closeWarningModal}>&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-body-text">
+                    You have not completed your 9 hours yet.<br/>
+                    Do you still want to punch Out?<br/>
+                    Time Left: {timeLeft}
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick={closeWarningModal}>Cancel</button>
+                <button class="btn btn-primary" data-id="punchOutAnyway" onclick={punchOutUser}>
+                    <span>Punch Out Anyway</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
 </template>

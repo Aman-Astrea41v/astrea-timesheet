@@ -1,3 +1,9 @@
+To do:
+1. Remember on which page(Survive page load)
+2. Add Loaders
+3. Update Login Page
+
+
 Feature: 
 1. Create daily task report like - For daily task : you can upload screenshots,Desc,Question.
 2. Admin can add daily task.
@@ -9,4 +15,4 @@ Feature:
 
 
 Problems :
-1. When editing task then task's hour and minutes is not showing but have value.If i want to edit one task having 1 hour and 20 min then it shows 0 h and 0 m.But when saving by updating 30 min and did not touch hour then hour is still 1 and minutes are updated and vice versa.
+No Problem

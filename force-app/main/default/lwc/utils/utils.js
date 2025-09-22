@@ -66,9 +66,9 @@ export function checkForPunchOutIs9Hour(punchInTime, punchOutTime) {
 
     // Checking if user completed 9 Hours
     if(totalMinutes >= 540){
-        return true;
+        return { status: true, timeDifference: totalMinutes };
     }
     else{
-        return false;
+        return { status: false, timeDifference: totalMinutes };
     }
 }

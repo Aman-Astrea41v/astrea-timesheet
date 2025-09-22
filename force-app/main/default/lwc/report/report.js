@@ -48,11 +48,10 @@ export default class Report extends LightningElement {
                 punchIn: report.Punch_In__c ? msToTime(report.Punch_In__c): '--:--',
                 punchOut: report.Punch_Out__c ? msToTime(report.Punch_Out__c) : '--:--',
                 location: report.Work_Mode__c,
-                status: report.Status__c,
+                status: report.Status__c ? report.Status__c : '--',
                 statusClass: report.Status__c == "Late" ? "badge status late" : "badge status ontime"
             })
         })
-        console.log(JSON.stringify(this.allReports));
     }
 
 
