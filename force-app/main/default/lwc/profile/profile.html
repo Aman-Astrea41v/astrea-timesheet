@@ -1,5 +1,14 @@
 <template>
     <div id="profile" class="page">
+
+        <div class="loader" if:true={isLoading}>
+            <lightning-spinner
+                alternative-text="Loading..."
+                size="medium"
+                variant="brand">
+            </lightning-spinner>
+        </div>
+
             <div class="profile-container">
                 <div class="profile-card">
                     <div class="profile-header">

@@ -1,10 +1,11 @@
-import { LightningElement, track } from 'lwc';
+import { LightningElement } from 'lwc';
 import getUsers from "@salesforce/apex/Users.getUsers";
 import { showAlert, setCookies } from 'c/utils';
 
 export default class Login extends LightningElement {
     email;
     password;
+    isPassword = true;
 
     setEmail(event){
         this.email = event.target.value;
@@ -14,13 +15,20 @@ export default class Login extends LightningElement {
         this.password = event.target.value;
     }
 
-    navigateToSignup(){
-        let event = new CustomEvent('navigate', {detail: 'signup'});
+    async navigateToForgetPassword(){
+        let event = new CustomEvent('navigate', {detail: 'forgetPassword'});
         this.dispatchEvent(event);
+        await setCookies('activeParent','forgetPassword');
     }
 
-    async login(){
+    togglePassword(){
+        this.template.querySelector('.password-input').type = this.isPassword ? 'text' : 'password';
+        this.isPassword = !this.isPassword;
+    }
+
+    async login(event){
         try{
+            event.preventDefault();
             const user = await getUsers({email:this.email});
             if(user == null){
                 showAlert('Error','Account does not exist','error');
@@ -36,12 +44,14 @@ export default class Login extends LightningElement {
                     showAlert('Success','Login successful','success');
                     let event = new CustomEvent('navigate', {detail: 'home'});
                     this.dispatchEvent(event);
+                    // To remember the page
+                    await setCookies('activeParent','home');
                 }
             }
         }
         catch(err){
             console.error(err);
-            this.showError(err);
+            this.showAlert('Error','Something went wrong','error');
         }
     }
 

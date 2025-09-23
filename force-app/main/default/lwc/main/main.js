@@ -1,10 +1,11 @@
 import { LightningElement, track, wire } from 'lwc';
 import { subscribe, MessageContext } from 'lightning/messageService';
 import MY_CHANNEL from "@salesforce/messageChannel/MyChannel__c";
+import { getCookies } from 'c/utils';
 
 
 export default class Main extends LightningElement {
-    @track currentPage = 'login';
+    @track currentPage = 'forgetPassword';
     subscription;
     @wire(MessageContext)
     MessageContext;
@@ -13,7 +14,12 @@ export default class Main extends LightningElement {
         if(!this.subscription){
             this.subscription = subscribe(this.MessageContext, MY_CHANNEL, (message) => {
                 this.handleMessage(message)
-            });
+            }); 
+        }
+
+        let activePage = getCookies('activeParent');
+        if(activePage != null){
+            this.currentPage = activePage;
         }
     }
 
@@ -37,6 +43,10 @@ export default class Main extends LightningElement {
 
     get isHome(){
         return this.currentPage === 'home';
+    }
+
+    get isVerifyMail(){
+        return this.currentPage === 'forgetPassword';
     }
 
 }

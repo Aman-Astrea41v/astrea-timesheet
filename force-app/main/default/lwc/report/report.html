@@ -1,5 +1,14 @@
 <template>
     <div id="reports" class="page">
+        
+        <div class="loader" if:true={isLoading}>
+            <lightning-spinner
+                alternative-text="Loading..."
+                size="medium"
+                variant="brand">
+            </lightning-spinner>
+        </div>
+
         <div class="reports-header">
             <h1 class="page-title">Attendance Reports</h1>
             <p class="page-subtitle">View and manage your punch in/out records</p>

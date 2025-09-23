@@ -1,0 +1,173 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #f8fafc;
+    width: 100vw;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    line-height: 1.5;
+}
+
+.verification-container {
+    background: #ffffff;
+    padding: 28px 32px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid #e2e8f0;
+}
+
+h1 {
+    color: #2d3748;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.subtitle {
+    color: #718096;
+    font-size: 16px;
+    margin-bottom: 32px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+label {
+    display: block;
+    color: #4a5568;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+input {
+    width: 100%;
+    padding: 10px 16px 10px 44px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 400;
+    color: #1f2937;
+    background-color: #ffffff;
+}
+
+input:focus {
+    outline: none;
+    border-color: #1e40af;
+    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+}
+
+input::placeholder{
+    color: #9ca3af;
+    font-weight: 400;
+}
+
+button {
+    width: 100%;
+    background-color: #1e40af;
+    color: #ffffff;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-bottom: 20px;
+}
+
+button:hover {
+    background-color: #1e3a8a;
+}
+
+button:active {
+    background-color: #1d4ed8;
+}
+
+button:disabled {
+    background-color: #94a3b8;
+    cursor: not-allowed;
+}
+
+.otp-section {
+    opacity: 1;
+    max-height: 200px;
+    transform: translateY(0);
+}
+
+.otp-input {
+    text-align: center;
+    font-size: 24px;
+    letter-spacing: 8px;
+    font-weight: 600;
+}
+
+.success-message {
+    color: #38a169;
+    background: #f0fff4;
+    border: 1px solid #9ae6b4;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 16px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+}
+
+.success-message.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.email-display {
+    background: #edf2f7;
+    border-radius: 8px;
+    padding: 12px;
+    margin: 16px 0;
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.login-page{
+    text-align: center;
+}
+
+.login-page a{
+    color: #1e40af;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.login-page a:hover {
+    color: #1e3a8a;
+}
+
+
+@media (max-width: 480px) {
+    .verification-container {
+        padding: 24px;
+        margin: 10px;
+    }
+    
+    h1 {
+        font-size: 24px;
+    }
+}

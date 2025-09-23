@@ -9,7 +9,7 @@
             </div>
             <div class="user-menu">
                 <button class="user-btn" onclick={toggleUserDropdown}>
-                    Aman Rehman
+                    {fullName}
                 </button>
                 <div class="dropdown-menu" id="userDropdown" if:true={userDropdown}>
                     <div class="dropdown-item" onclick={gotoProfile}>Profile</div>
@@ -19,6 +19,14 @@
             </div>
         </nav>
     </header>
+
+    <div class="loader" if:true={isLoading}>
+        <lightning-spinner
+            alternative-text="Loading..."
+            size="medium"
+            variant="brand">
+        </lightning-spinner>
+    </div>
 
     <div class="modal" id="punchModal" if:true={showPunchModal}>
         <div class="modal-content">

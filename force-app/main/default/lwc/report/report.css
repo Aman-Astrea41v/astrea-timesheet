@@ -313,6 +313,13 @@ body {
     background-color: #ff9800; /* orange */
 }
 
+.loader {
+    height: 100%;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.6);
+    z-index: 9999;
+}
+
 /* Responsive for mobile */
 @media(max-width: 1000px){
     .report-card {

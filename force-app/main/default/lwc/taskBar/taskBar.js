@@ -21,6 +21,7 @@ export default class taskBar extends LightningElement {
     startTimePerTask;
     isEdit;
     isPunchedIn = false;
+    isLoading = false;
 
     @track tasks = [];
 
@@ -35,6 +36,7 @@ export default class taskBar extends LightningElement {
     // Run when the component is mounted/ Screen is refreshed
     async connectedCallback(){
         try{
+            this.isLoading = true;
             await this.getTodaysTask();
             if(!this.subscription){
                 this.subscription = subscribe(this.MessageContext, MY_CHANNEL, (message) => {
@@ -70,20 +72,24 @@ export default class taskBar extends LightningElement {
                 this.statusPanel = { class: 'status-panel status-inactive', indicator: 'Completed', text: 'Day Completed',workType:reportData.workMode,punchTime:'Ended : ' + this.punchOutTime ,dailyTotal: dailyTotal
                 }
             }
+            this.isLoading = false;
         }
         catch(err){
             console.log('Error from TaskBar ConnectedCallback: ',JSON.stringify(err));
             console.log('Error from TaskBar ConnectedCallback: ',err?.message);
+            this.isLoading = false;
         }
 
     }
 
     async updateTask(){
+        this.isLoading = true;
         await this.getTodaysTask();
         this.tasks = this.tasks.map(task => ({
             ...task,
             formattedDuration: this.formatDuration(task.duration)
         }));
+        this.isLoading = false;
     }
 
     calculateStartTime(punchInTime,dailyTotal){
@@ -132,31 +138,42 @@ export default class taskBar extends LightningElement {
 
     async getTodaysTask(){
         // Getting user Id to get related Tasks
-        const uid = await getCookies('uid');
-        let today = new Date().toISOString().split('T')[0]; 
-        if(this.selectedDate != today){
-            this.selectedDate = today;
-            const tasks = await getAllTasks({userId: uid, specificDate: today});
-            this.tasks = [];
-            if(tasks.length > 0){
-                tasks.map((task) => {
-                    this.tasks.push({
-                        id: task.Id,
-                        title: task.Name,
-                        duration: task.Duration__c,
-                        startTime: msToTime(task.StartTime__c),
-                        endTime: msToTime(task.EndTime__c),
-                        formattedDuration: this.formatDuration(task.Duration__c),
-                        description: task.Description__c
+        try{
+            this.isLoading = true;
+            const uid = await getCookies('uid');
+            let today = new Date().toISOString().split('T')[0]; 
+            if(this.selectedDate != today){
+                this.selectedDate = today;
+                this.template.querySelector('.filter-date-task').value = today;
+                const tasks = await getAllTasks({userId: uid, specificDate: today});
+                this.tasks = [];
+                if(tasks.length > 0){
+                    tasks.map((task) => {
+                        this.tasks.push({
+                            id: task.Id,
+                            title: task.Name,
+                            duration: task.Duration__c,
+                            startTime: msToTime(task.StartTime__c),
+                            endTime: msToTime(task.EndTime__c),
+                            formattedDuration: this.formatDuration(task.Duration__c),
+                            description: task.Description__c
+                        })
                     })
-                })
+                }
             }
+        this.isLoading = false;
+        }
+        catch(err){
+            console.log('Error in TaskBar: ',JSON.stringify(err));
+            console.log('Error in TaskBar: ',err?.message);
+            this.isLoading = false;
         }
     }
 
 
     async filterTaskByDate(event){
         try{
+            this.isLoading = true;
             const uid = await getCookies('uid');
             if(this.selectedDate != event.target.value){
                 this.selectedDate = event.target.value;       
@@ -176,9 +193,11 @@ export default class taskBar extends LightningElement {
                     })
                 }
             }
+            this.isLoading = false;
         }
         catch(err){
             console.log('Error from TaskBar: ',JSON.stringify(err));
+            this.isLoading = false;
         }
     }
 
@@ -277,6 +296,7 @@ export default class taskBar extends LightningElement {
     // Save task
     async saveTask() {
         try{
+            this.isLoading = true;
             const uid = await getCookies('uid');
             this.newTask.duration = parseInt(this.Modalhours) * 60 + parseInt(this.Modalminutes);
 
@@ -325,10 +345,12 @@ export default class taskBar extends LightningElement {
             await setCookies('dailyTotal'+ uid, this.statusPanel.dailyTotal);
             this.selectedDate = null;
             this.closeTaskForm();
+            this.isLoading = false;
         }
         catch(err){
             console.log('Taskbar Error Save Task: ',JSON.stringify(err));
             console.log('Taskbar Error Message Save Task: ',err?.message);
+            this.isLoading = false;
         }
     }
 

@@ -1,7 +1,7 @@
 import { LightningElement, wire } from 'lwc';
 import MY_CHANNEL from "@salesforce/messageChannel/MyChannel__c";
 import { publish, MessageContext } from 'lightning/messageService';
-import { removeCookies, getCookies, showAlert, checkForPunchOutIs9Hour } from 'c/utils';
+import { removeCookies, getCookies, setCookies, showAlert, checkForPunchOutIs9Hour } from 'c/utils';
 import punchInUserApex from '@salesforce/apex/Reports.punchInUserApex';
 import punchOutUserApex from '@salesforce/apex/Reports.punchOutUserApex';
 import getUserPunchStatus from '@salesforce/apex/Reports.getUserPunchStatus';
@@ -17,6 +17,8 @@ export default class Navbar extends LightningElement {
     punchInTime;
     showWarning = false;
     timeLeft;
+    fullName;
+    isLoading = false;
     // Create Context
     @wire(MessageContext)
     messageContext
@@ -24,8 +26,12 @@ export default class Navbar extends LightningElement {
 
     async connectedCallback(){
         try{
+            this.isLoading = true;
             // Managing Status Panel and Punch In Status
             const uid = await getCookies('uid');
+            const email = await getCookies('email');
+            let user = await getUsers({email:email});
+            this.fullName = user.First_Name__c + ' ' + user.Last_Name__c;
             const specificDate = new Date().toISOString().split('T')[0];
 
             const reportData = await getUserPunchStatus({userId:uid,specificDate:specificDate});
@@ -44,10 +50,12 @@ export default class Navbar extends LightningElement {
                 this.punchedIn = false;
                 this.punchedOut = false;
             }
+            this.isLoading = false;
         }   
         catch(err){
             console.log('Parsed Error from Navbar: ',JSON.stringify(err));
             console.log('Error Message from Navbar: ',err?.message);
+            this.isLoading = false;
         }
     }   
 
@@ -74,6 +82,7 @@ export default class Navbar extends LightningElement {
 
     async punchInUser(){
         try{
+            this.isLoading = true;
             this.punchedIn = false;
             this.punchedOut = true;
             this.showPunchModal = false;
@@ -98,15 +107,18 @@ export default class Navbar extends LightningElement {
             else{
                 await showAlert('Error!', 'Punched In Failed', 'error');
             }
+            this.isLoading = false;
         }
         catch(err){
             console.log('Error from Navbar: ',JSON.stringify(err));
+            this.isLoading = false;
         }
     }
 
 
     async checkUserPunchHour(){
         try{
+            this.isLoading = true;
             let [h, m, s] = this.punchInTime.replace('Z','').split(':').map(Number);
             h += 9;
             h = h % 24;
@@ -129,15 +141,18 @@ export default class Navbar extends LightningElement {
             else{
                 await this.punchOutUser();
             }
+            this.isLoading = false;
         }
         catch(err){
             console.log('Error from Navbar: ',JSON.stringify(err));
             console.log('Error from Check Punchin : ',err?.message);
+            this.isLoading = false;
         }
     }
 
     async punchOutUser(event){
         try{
+            this.isLoading = true;
             let punchOutTime = (new Date().toLocaleTimeString('en-GB', { 
                 timeZone: 'Asia/Kolkata', 
                 hour12: false 
@@ -186,10 +201,12 @@ export default class Navbar extends LightningElement {
             else{
                 await showAlert('Error!', 'Punched Out Failed', 'error');
             }
+            this.isLoading = false;
         }
         catch(err){
             console.log('Error from Navbar: ',JSON.stringify(err));
             console.log('Error from Punch Out : ',err?.message);
+            this.isLoading = false;
         }
     }
 
@@ -198,24 +215,30 @@ export default class Navbar extends LightningElement {
         // this.dispatchEvent(event);
         // Instead of prop drilling we use message context
         publish(this.messageContext, MY_CHANNEL, {type: 'PAGE' ,page: 'login'});
+        setCookies('activeParent','login');
+        removeCookies('uid');
+        removeCookies('activeChild');
         await removeCookies('email');
     }
 
     gotoHome(){
         const event = new CustomEvent('navigate', { detail: 'taskbar'});
         this.dispatchEvent(event);
+        setCookies('activeChild','taskbar');
         this.userDropdown = false;
     }
 
     gotoProfile(){
         const event = new CustomEvent('navigate', { detail: 'profile'});
         this.dispatchEvent(event);
+        setCookies('activeChild','profile');
         this.userDropdown = false;
     }
 
     gotoReport(){
         const event = new CustomEvent('navigate', { detail: 'report'});
         this.dispatchEvent(event);
+        setCookies('activeChild','report');
         this.userDropdown = false;
     }
 }

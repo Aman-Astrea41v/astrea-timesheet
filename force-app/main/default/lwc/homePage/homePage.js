@@ -1,14 +1,19 @@
 import { getCookies } from 'c/utils';
-import { LightningElement, track } from 'lwc';
+import { LightningElement } from 'lwc';
 
 export default class HomePage extends LightningElement {
     currentPage;
     
     async connectedCallback(){
         const ID = await getCookies('uid');
-        if(ID){
+        let activePage = await getCookies('activeChild');
+        if(ID && activePage ==  null){
             this.currentPage = 'taskbar';
         }
+        if(activePage != null){
+            this.currentPage = activePage;
+        }
+
     }
 
     navigateTo(event){

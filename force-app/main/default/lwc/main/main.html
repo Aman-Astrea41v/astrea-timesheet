@@ -10,4 +10,8 @@
     <template if:true={isHome}>
         <c-home-page onnavigate={navigatePage}></c-home-page>
     </template>
+
+    <template if:true={isVerifyMail}>
+        <c-verify-email onnavigate={navigatePage}></c-verify-email>
+    </template>
 </template>

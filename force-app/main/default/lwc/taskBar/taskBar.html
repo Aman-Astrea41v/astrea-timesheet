@@ -6,7 +6,7 @@
                         <h2 class="section-title">Today's Tasks</h2>
 
                         <div class="task-filter-panel">
-                            <input type="date" class="filter-date-task" value={selectedDate} onchange={filterTaskByDate}>
+                            <input type="date" class="filter-date-task" onchange={filterTaskByDate}>
                             <button class="btn btn-info" onclick={getTodaysTask}>Today</button>
                         </div>
 
@@ -15,7 +15,18 @@
                         </button>
                     </div>
                     <div class="section-content">
+
+                        <div class="loader" if:true={isLoading}>
+                            <lightning-spinner
+                                alternative-text="Loading..."
+                                size="medium"
+                                variant="brand">
+                            </lightning-spinner>
+                        </div>
+
+
                         <table class="data-table">
+                        
                             <thead>
                                 <tr>
                                     <th>Task Title</th>
@@ -26,6 +37,7 @@
                                 </tr>
                             </thead>
 
+                            
                             <tbody id="tasksTableBody" if:true={tasks.length}>
                                 <template for:each={tasks} for:item="task">
                                     <tr key={task.id}>
