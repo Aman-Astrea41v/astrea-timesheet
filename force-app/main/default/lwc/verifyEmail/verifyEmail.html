@@ -1,33 +1,41 @@
 <template>
-    <div class="verification-container">
-        <h1>Verify Your Email</h1>
-        <p class="subtitle">Enter your email address to receive a verification code</p>
-        
-        <div class="form-group">
-            <label for="email">Email Address</label>
-            <input type="email" id="email" placeholder="Enter your email address" value={email} onchange={setEmail}>
-            <label for="email" style="color: red;">{error}</label>
-        </div>
-        
-        <button id="verifyBtn" onclick={sendOTP}>Send Verification Code</button>
-        
-        <div class="login-page">
-            <a onclick={gotoLogin}>Go to Login</a>
-        </div>
+    <div class="wrapper">
 
-        <div class="otp-section" id="otpSection">
-            <div class="email-display" id="emailDisplay"></div>
+        <div class="verification-container">
+            <h1>Verify Your Email</h1>
+            <p class="subtitle">Enter your email address to receive a verification code</p>
             
-            <div class="form-group">
-                <label for="otp">Verification Code</label>
-                <input type="text" id="otp" class="otp-input" placeholder="000000" maxlength="6" required>
+            <div if:false={isOTP}>
+            
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="Enter your email address" oninput={handleEmailChange}>
+                    <label for="email" style="color: red;">{error}</label>
+                </div>
+                
+                <button id="verifyBtn" onclick={sendOTP} disabled={otpRelax}>{otpBtnLabel}</button>
+                
+                <div class="login-page">
+                    <a onclick={gotoLogin}>Go to Login</a>
+                </div>
             </div>
-            
-            <button id="submitBtn" onclick={verifyOTP}>Verify Code</button>
-        </div>
+
+            <div class="otp-section" id="otpSection" if:true={isOTP}>
+                <div class="email-display" id="emailDisplay">{email}</div>
+                
+                <div class="form-group">
+                    <label for="otp">Verification Code</label>
+                    <input type="text" id="otp" class="otp-input" placeholder="000000" maxlength="6" oninput={handleOTPChange} required>
+                </div>
+                
+                <button id="submitBtn" onclick={verifyOTP}>Verify Code</button>
+
+                <div class="login-page">
+                    <a onclick={updateEmail}>Update Email</a>
+                </div>
+
+            </div>
         
-        <div class="success-message" id="successMessage">
-            ✓ Email verification successful! Welcome aboard.
         </div>
     </div>
 </template>

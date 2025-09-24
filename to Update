@@ -1,5 +1,5 @@
 To do:
-1. Add Forget Password
+1. Make everything encrypted using Custom_Setting to store key and use CryptoJS in Apex Class.Reset password is already encrypted.
 
 
 Feature: 

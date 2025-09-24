@@ -1,11 +1,22 @@
 import { LightningElement } from 'lwc';
 import getUsers from "@salesforce/apex/Users.getUsers";
 import { showAlert, setCookies } from 'c/utils';
+import CryptoJS from "@salesforce/resourceUrl/CryptoJS";
+import { loadScript } from 'lightning/platformResourceLoader';
 
 export default class Login extends LightningElement {
     email;
     password;
     isPassword = true;
+
+    connectedCallback(){
+        loadScript(this, CryptoJS)
+        .then(() => {
+            console.log('CryptoJS loaded with AES');
+        })
+        .catch(error => console.error('Failed to load CryptoJS', error));
+    }
+
 
     setEmail(event){
         this.email = event.target.value;

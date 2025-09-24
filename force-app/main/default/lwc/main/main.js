@@ -5,7 +5,7 @@ import { getCookies } from 'c/utils';
 
 
 export default class Main extends LightningElement {
-    @track currentPage = 'forgetPassword';
+    @track currentPage = 'login';
     subscription;
     @wire(MessageContext)
     MessageContext;
@@ -20,6 +20,9 @@ export default class Main extends LightningElement {
         let activePage = getCookies('activeParent');
         if(activePage != null){
             this.currentPage = activePage;
+        }
+        else{
+            this.currentPage = 'login';
         }
     }
 
@@ -49,4 +52,7 @@ export default class Main extends LightningElement {
         return this.currentPage === 'forgetPassword';
     }
 
+    get isNewPassword(){
+        return this.currentPage === 'newPassword';
+    }
 }

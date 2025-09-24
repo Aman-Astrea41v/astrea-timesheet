@@ -14,4 +14,8 @@
     <template if:true={isVerifyMail}>
         <c-verify-email onnavigate={navigatePage}></c-verify-email>
     </template>
+
+    <template if:true={isNewPassword}>
+        <c-new-password onnavigate={navigatePage}></c-new-password>
+    </template>
 </template>

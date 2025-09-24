@@ -210,7 +210,7 @@ export default class Navbar extends LightningElement {
         }
     }
 
-    async logOutUser(){
+    logOutUser(){
         // const event = new CustomEvent('navigate', { detail: 'login'});
         // this.dispatchEvent(event);
         // Instead of prop drilling we use message context
@@ -218,7 +218,7 @@ export default class Navbar extends LightningElement {
         setCookies('activeParent','login');
         removeCookies('uid');
         removeCookies('activeChild');
-        await removeCookies('email');
+        removeCookies('email');
     }
 
     gotoHome(){

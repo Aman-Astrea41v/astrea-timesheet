@@ -38,4 +38,22 @@ public with sharing class Users {
         }
     }
 
+
+    @AuraEnabled
+    public static Boolean resetUserPassword(String email,String newPassword){
+        try {
+            User__c user = [SELECT Id, Password__c FROM User__c WHERE Email__c = :email LIMIT 1];
+            if (user != null){
+                user.Password__c = newPassword;
+                update user;
+                return true;
+            }
+            else{
+                return false;
+            }
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
 }

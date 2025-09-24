@@ -4,17 +4,15 @@
     box-sizing: border-box;
 }
 
-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: #f8fafc;
-    width: 100vw;
-    min-height: 100vh;
+.wrapper {
+    height: 100vh;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;    
     padding: 20px;
-    line-height: 1.5;
+    background-color: #f8fafc; 
 }
+
 
 .login-container {
     background: #ffffff;
