@@ -1,4 +1,4 @@
-public with sharing class Users {
+public without sharing class Users {
     @AuraEnabled
     public static User__c getUsers(String email){
         try{

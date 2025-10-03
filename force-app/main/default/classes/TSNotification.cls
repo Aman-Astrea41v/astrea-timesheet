@@ -1,4 +1,4 @@
-public with sharing class TSNotification {
+public without sharing class TSNotification {
     
     @AuraEnabled
     public static void sendEarlyPunchOutNotification(List<String> emailAddresses, Map<String, String> userData){

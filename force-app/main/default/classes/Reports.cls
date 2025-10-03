@@ -1,4 +1,4 @@
-public with sharing class Reports {
+public without sharing class Reports {
 
     @AuraEnabled(cacheable=true)
     public static List<Report__c> getReportByStatus(String userId,String status){

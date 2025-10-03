@@ -4,6 +4,7 @@ import resetUserPassword from '@salesforce/apex/Users.resetUserPassword';
 import CryptoJS from "@salesforce/resourceUrl/CryptoJS";
 import { loadScript } from 'lightning/platformResourceLoader';
 
+
 export default class NewPassword extends LightningElement {
     password;
     conPassword;
@@ -15,6 +16,9 @@ export default class NewPassword extends LightningElement {
             console.log('CryptoJS loaded with AES');
         })
         .catch(error => console.error('Failed to load CryptoJS', error));
+        let event = new CustomEvent('navigate', {detail: 'resetPassword'});
+        this.dispatchEvent(event);
+
     }
 
     handlePasswordChange(event){

@@ -28,7 +28,7 @@ export default class taskBar extends LightningElement {
     @track newTask = { title: '', duration: 0,startTime:'',endTime:'--:--', description: '' };
     showTaskForm = false;
 
-    @track statusPanel = { class: 'status-panel status-pending', indicator: 'Waiting', text: 'Not Started',workType:'Please punch in to begin',punchTime: '' ,dailyTotal: '0h 0m' };
+    @track statusPanel = { class: 'status-panel status-pending', indicator: 'Waiting', text: 'Not Started',workType:'Please punch in to begin',punchTime: '' ,dailyTotal: '0 H 0 M' };
 
     @wire(MessageContext)
         MessageContext;
@@ -37,7 +37,7 @@ export default class taskBar extends LightningElement {
     async connectedCallback(){
         try{
             this.isLoading = true;
-            await this.getTodaysTask();
+            await this.getTodaysTask(true);
             if(!this.subscription){
                 this.subscription = subscribe(this.MessageContext, MY_CHANNEL, (message) => {
                     this.handleMessage(message)
@@ -47,9 +47,12 @@ export default class taskBar extends LightningElement {
             // Managing Status Panel and Punch In Status
             const uid = await getCookies('uid');
             let dailyTotal = await getCookies('dailyTotal'+uid);
+            this.calculateDailyTotal();
+            if( dailyTotal.split(' ')[0] != this.statusPanel.dailyTotal.split(' ')[0] || dailyTotal.split(' ')[2] != this.statusPanel.dailyTotal.split(' ')[2] ){
+                dailyTotal = this.statusPanel.dailyTotal;
+            }
             const specificDate = new Date().toISOString().split('T')[0];
             const reportData = await getUserPunchStatus({userId:uid,specificDate:specificDate});
-            
             if(dailyTotal == null){
                 dailyTotal = this.formatDuration(0);
             }
@@ -82,9 +85,13 @@ export default class taskBar extends LightningElement {
 
     }
 
+    calculateDailyTotal(){
+        this.statusPanel.dailyTotal = this.formatDuration(this.tasks.reduce((acc, task) => acc + task.duration, 0));
+    }
+
     async updateTask(){
         this.isLoading = true;
-        await this.getTodaysTask();
+        await this.getTodaysTask(true);
         this.tasks = this.tasks.map(task => ({
             ...task,
             formattedDuration: this.formatDuration(task.duration)
@@ -121,12 +128,12 @@ export default class taskBar extends LightningElement {
                     second: '2-digit'
             });
             this.startTimePerTask = this.newTask.startTime;
-            this.statusPanel = { class: 'status-panel status-active', indicator: 'Active', text: 'Currently Working',workType:message.workMode == 'WFH' ? 'Work from Home': 'Work from Office',punchTime:'Started : ' + new Date(message.time).toLocaleString().substring(11, 19) ,dailyTotal: '0h 0m'}
+            this.statusPanel = { class: 'status-panel status-active', indicator: 'Active', text: 'Currently Working',workType:message.workMode == 'WFH' ? 'Work from Home': 'Work from Office',punchTime:'Started : ' + new Date(message.time).toLocaleString().substring(11, 19) ,dailyTotal: '0 H 0 M'}
         }
         else if(message.type == 'PUNCHOUT'){
             this.isPunchedIn = false;
             this.punchOutTime = message.time;
-            this.statusPanel = { class: 'status-panel status-inactive', indicator: 'Complete', text: 'Day Completed',workType:message.workMode == 'WFH' ? 'Work from Home': 'Work from Office',punchTime: 'Ended : ' + new Date(message.time).toLocaleString().substring(11, 19) ,dailyTotal: '0h 0m'}
+            this.statusPanel = { class: 'status-panel status-inactive', indicator: 'Complete', text: 'Day Completed',workType:message.workMode == 'WFH' ? 'Work from Home': 'Work from Office',punchTime: 'Ended : ' + new Date(message.time).toLocaleString().substring(11, 19) ,dailyTotal: '0 H 0 M'}
         }
     }
 
@@ -136,13 +143,13 @@ export default class taskBar extends LightningElement {
         return `${hours} H ${minutes} M`;
     }
 
-    async getTodaysTask(){
+    async getTodaysTask(reload = false){
         // Getting user Id to get related Tasks
         try{
             this.isLoading = true;
             const uid = await getCookies('uid');
             let today = new Date().toISOString().split('T')[0]; 
-            if(this.selectedDate != today){
+            if(this.selectedDate != today || reload){
                 this.selectedDate = today;
                 this.template.querySelector('.filter-date-task').value = today;
                 const tasks = await getAllTasks({userId: uid, specificDate: today});
@@ -312,7 +319,6 @@ export default class taskBar extends LightningElement {
                 })
                 if(response){
                     await showAlert('Success', 'Task Updated Successfully', 'success');
-                    this.updateTask();
                 }
                 else{
                     await showAlert('Error', 'Error updating Task', 'error');
@@ -333,7 +339,6 @@ export default class taskBar extends LightningElement {
 
                 if(response){
                     await showAlert('Success', 'Task Added Successfully', 'success');
-                    this.updateTask();
                 }
                 else{
                     await showAlert('Error', 'Error adding Task', 'error');
@@ -341,7 +346,7 @@ export default class taskBar extends LightningElement {
                 
             }
             await this.updateTask();
-            this.statusPanel.dailyTotal = this.formatDuration(this.tasks.reduce((acc, task) => acc + task.duration, 0));
+            this.calculateDailyTotal();
             await setCookies('dailyTotal'+ uid, this.statusPanel.dailyTotal);
             this.selectedDate = null;
             this.closeTaskForm();

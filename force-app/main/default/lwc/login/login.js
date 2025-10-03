@@ -3,11 +3,13 @@ import getUsers from "@salesforce/apex/Users.getUsers";
 import { showAlert, setCookies } from 'c/utils';
 import CryptoJS from "@salesforce/resourceUrl/CryptoJS";
 import { loadScript } from 'lightning/platformResourceLoader';
+import astreaLogo from "@salesforce/resourceUrl/astreaLogo";
 
 export default class Login extends LightningElement {
     email;
     password;
     isPassword = true;
+    astreaLogo;
 
     connectedCallback(){
         loadScript(this, CryptoJS)
@@ -15,6 +17,7 @@ export default class Login extends LightningElement {
             console.log('CryptoJS loaded with AES');
         })
         .catch(error => console.error('Failed to load CryptoJS', error));
+        this.astreaLogo = astreaLogo;
     }
 
 

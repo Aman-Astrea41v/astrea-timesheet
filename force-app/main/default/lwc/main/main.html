@@ -1,21 +1,12 @@
 <template>
-    <template if:true={isLogin}>
-        <c-login onnavigate={navigatePage}></c-login>
+    <template if:true={isMobile}>
+        <c-no-access onnavigate={navigatePage}></c-no-access>
     </template>
 
-    <template if:true={isSignup}>
-        <c-signup onnavigate={navigatePage}></c-signup>
-    </template>
-
-    <template if:true={isHome}>
-        <c-home-page onnavigate={navigatePage}></c-home-page>
-    </template>
-
-    <template if:true={isVerifyMail}>
-        <c-verify-email onnavigate={navigatePage}></c-verify-email>
-    </template>
-
-    <template if:true={isNewPassword}>
-        <c-new-password onnavigate={navigatePage}></c-new-password>
+    <template if:false={isMobile}>
+        <c-login if:true={isLogin} onnavigate={navigatePage}></c-login>
+        <c-home-page if:true={isHome} onnavigate={navigatePage}></c-home-page>
+        <c-verify-email if:true={isVerifyMail} onnavigate={navigatePage}></c-verify-email>
+        <c-new-password if:true={isNewPassword} onnavigate={navigatePage}></c-new-password>
     </template>
 </template>

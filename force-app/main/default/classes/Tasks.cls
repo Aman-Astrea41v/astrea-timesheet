@@ -1,4 +1,4 @@
-public with sharing class Tasks {
+public without sharing class Tasks {
     
     @AuraEnabled
     public static List<Task__c> getAllTasks(String userId,String specificDate){
