@@ -1,12 +1,16 @@
 import LightningAlert from 'lightning/alert';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
-export function showAlert(title, message, theme = 'info') {
-    return LightningAlert.open({
-            message: message,
-            theme: theme,
-            label: title
+export function showAlert(component,title, message, theme = 'info') {
+    const event = new ShowToastEvent({
+        title: title,
+        message: message,
+        variant: theme, 
+        mode: 'pester'
     });
+    component.dispatchEvent(event);
 }
+
 
 export function setCookies(name,value){
     try{

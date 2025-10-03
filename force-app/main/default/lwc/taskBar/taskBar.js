@@ -11,6 +11,7 @@ import getUserPunchStatus from '@salesforce/apex/Reports.getUserPunchStatus';
 
 export default class taskBar extends LightningElement {
     // Initialize Variables
+    @track today;
     selectedDate;
     subscription;
     formattedDuration = '';
@@ -36,6 +37,11 @@ export default class taskBar extends LightningElement {
     // Run when the component is mounted/ Screen is refreshed
     async connectedCallback(){
         try{
+            const d = new Date();
+            const month = (d.getMonth() + 1).toString().padStart(2, '0');
+            const day = d.getDate().toString().padStart(2, '0');
+            const year = d.getFullYear();
+            this.today = `${year}-${month}-${day}`;
             this.isLoading = true;
             await this.getTodaysTask(true);
             if(!this.subscription){
@@ -318,10 +324,10 @@ export default class taskBar extends LightningElement {
                     endTime: this.newTask.endTime
                 })
                 if(response){
-                    await showAlert('Success', 'Task Updated Successfully', 'success');
+                    await showAlert(this,'Success', 'Task Updated Successfully', 'success');
                 }
                 else{
-                    await showAlert('Error', 'Error updating Task', 'error');
+                    await showAlert(this,'Error', 'Error updating Task', 'error');
                 }
             } else {
                 // add new task
@@ -338,10 +344,10 @@ export default class taskBar extends LightningElement {
                 })
 
                 if(response){
-                    await showAlert('Success', 'Task Added Successfully', 'success');
+                    await showAlert(this,'Success', 'Task Added Successfully', 'success');
                 }
                 else{
-                    await showAlert('Error', 'Error adding Task', 'error');
+                    await showAlert(this,'Error', 'Error adding Task', 'error');
                 }
                 
             }

@@ -1,11 +1,12 @@
 import { LightningElement, track, wire } from 'lwc';
 import { subscribe, unsubscribe, MessageContext } from 'lightning/messageService';
 import MY_CHANNEL from '@salesforce/messageChannel/MyChannel__c';
+import { getCookies } from 'c/utils';
 
 export default class Main extends LightningElement {
     @track width = window.innerWidth;
-    @track isMobile = window.innerWidth < 850;
-    @track currentPage = window.innerWidth < 850 ? 'noAccess' : 'login';
+    @track isMobile = this.isMobileDevice() || window.innerWidth < 850;
+    @track currentPage = this.isMobile ? 'noAccess' : 'login';
 
     subscription;
     boundUpdateWidth;
@@ -22,11 +23,9 @@ export default class Main extends LightningElement {
             );
         }
 
-        // Fix: bind the method once and use it
         this.boundUpdateWidth = this.updateWidth.bind(this);
         window.addEventListener('resize', this.boundUpdateWidth);
 
-        // Ensure correct state at mount
         this.updateWidth();
     }
 
@@ -39,17 +38,28 @@ export default class Main extends LightningElement {
         }
     }
 
+    isMobileDevice() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent
+        );
+    }
+
     updateWidth() {
         this.width = window.innerWidth;
-        const mobile = this.width < 850;
 
-        this.isMobile = mobile;
+        this.isMobile = this.isMobileDevice() || this.width < 850;
 
-        if (mobile) {
+        if (this.isMobile) {
             this.currentPage = 'noAccess';
-        } else if (!mobile && (!this.currentPage || this.currentPage === 'noAccess')) {
-            this.currentPage = 'login';
+            return;
         }
+
+        if (this.currentPage === 'newPassword') {
+            return;
+        }
+
+        const activePage = getCookies('activeParent');
+        this.currentPage = activePage || 'login';
     }
 
     handleMessage(message) {
@@ -62,6 +72,7 @@ export default class Main extends LightningElement {
         this.currentPage = event.detail;
     }
 
+    // Template getters
     get isLogin() {
         return !this.isMobile && this.currentPage === 'login';
     }

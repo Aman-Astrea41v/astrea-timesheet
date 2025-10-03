@@ -6,7 +6,7 @@
                         <h2 class="section-title">Today's Tasks</h2>
 
                         <div class="task-filter-panel">
-                            <input type="date" class="filter-date-task" onchange={filterTaskByDate}>
+                            <input type="date" class="filter-date-task" onchange={filterTaskByDate} max={today}>
                             <button class="btn btn-info" onclick={getTodaysTask}>Today</button>
                         </div>
 

@@ -148,6 +148,9 @@ body {
 }
 
 .user-menu {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     position: relative;
 }
 
@@ -208,6 +211,44 @@ body {
     transition: all 0.2s ease;
     font-size: 0.9rem;
 }
+
+.btn-punch-in{
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-punch-in:hover{
+    background-color: #218838;
+}
+
+.btn-punch-in:disabled{
+    background-color: #94d3a2;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+
+.btn-punch-out{
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-punch-out:hover {
+    background-color: #c82333;
+}
+
 
 .btn-primary {
     background: #2c5aa0;

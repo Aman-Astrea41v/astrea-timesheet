@@ -62,6 +62,16 @@ public without sharing class TSNotification {
                 throw new AuraHandledException('No User Exist with this mail.Contact your Admin');
             }
 
+
+            OrgWideEmailAddress owe = [
+                SELECT Id 
+                FROM OrgWideEmailAddress 
+                WHERE Address = 'aman@astreait.com' 
+                LIMIT 1
+            ];
+
+
+
             String year = String.valueOf(Date.today().year());
 
              String htmlBody = ''
@@ -122,6 +132,7 @@ public without sharing class TSNotification {
             email.setToAddresses(new String[] { emailTo });
             email.setSubject('Password Reset Request for TimeSheet');
             email.setHtmlBody(htmlBody);
+            email.setOrgWideEmailAddressId(owe.Id);
 
             // Send
             Messaging.sendEmail(new Messaging.SingleEmailMessage[] { email });

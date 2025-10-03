@@ -30,8 +30,7 @@ public without sharing class Reports {
         }
     }
     
-    
-    @AuraEnabled(cacheable=true)
+
     public static List<Report__c> getReportForThisWeek(String userId){
         try {
             return [
@@ -46,7 +45,6 @@ public without sharing class Reports {
         }
     }
 
-    @AuraEnabled(cacheable=true)
     public static List<Report__c> getReportForLastWeek(String userId){
         try {
             return [

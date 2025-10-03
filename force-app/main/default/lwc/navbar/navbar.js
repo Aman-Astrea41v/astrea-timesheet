@@ -102,10 +102,10 @@ export default class Navbar extends LightningElement {
             });
 
             if(response){
-                await showAlert('Success', 'Punched In Successfully', 'success');
+                await showAlert(this,'Success', 'Punched In Successfully', 'success');
             }
             else{
-                await showAlert('Error!', 'Punched In Failed', 'error');
+                await showAlert(this,'Error!', 'Punched In Failed', 'error');
             }
             this.isLoading = false;
         }
@@ -196,10 +196,10 @@ export default class Navbar extends LightningElement {
                 status: status
             })
             if(response){
-                await showAlert('Success', 'Punched Out Successfully', 'success');
+                await showAlert(this,'Success', 'Punched Out Successfully', 'success');
             }
             else{
-                await showAlert('Error!', 'Punched Out Failed', 'error');
+                await showAlert(this,'Error!', 'Punched Out Failed', 'error');
             }
             this.isLoading = false;
         }

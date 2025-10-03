@@ -1,6 +1,6 @@
 import { LightningElement } from 'lwc';
 import getUsers from "@salesforce/apex/Users.getUsers";
-import { showAlert, setCookies } from 'c/utils';
+import { showAlert, setCookies, showToast } from 'c/utils';
 import CryptoJS from "@salesforce/resourceUrl/CryptoJS";
 import { loadScript } from 'lightning/platformResourceLoader';
 import astreaLogo from "@salesforce/resourceUrl/astreaLogo";
@@ -45,17 +45,17 @@ export default class Login extends LightningElement {
             event.preventDefault();
             const user = await getUsers({email:this.email});
             if(user == null){
-                showAlert('Error','Account does not exist','error');
+                showAlert(this,'Error','Account does not exist','error');
                 return;
             }
             else{
                 if(user.Password__c != this.password){
-                    showAlert('Error','Incorrect password','error');
+                    showAlert(this,'Error','Incorrect password','error');
                 }
                 else{
                     await setCookies('email',this.email);
                     await setCookies('uid',user.Id);
-                    showAlert('Success','Login successful','success');
+                    showAlert(this,'Success','Login successful','success');
                     let event = new CustomEvent('navigate', {detail: 'home'});
                     this.dispatchEvent(event);
                     // To remember the page
@@ -65,7 +65,7 @@ export default class Login extends LightningElement {
         }
         catch(err){
             console.error(err);
-            this.showAlert('Error','Something went wrong','error');
+            this.showAlert(this,'Error','Something went wrong','error');
         }
     }
 

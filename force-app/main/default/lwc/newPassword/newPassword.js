@@ -16,8 +16,6 @@ export default class NewPassword extends LightningElement {
             console.log('CryptoJS loaded with AES');
         })
         .catch(error => console.error('Failed to load CryptoJS', error));
-        let event = new CustomEvent('navigate', {detail: 'resetPassword'});
-        this.dispatchEvent(event);
 
     }
 
@@ -36,7 +34,7 @@ export default class NewPassword extends LightningElement {
         event.preventDefault();
         try{
             if(this.password != this.conPassword){
-                this.error = 'Passwords do not match';
+                await showAlert(this,'Error','Passwords do not match','error');
             }
             else{
                 const encryptionKey = "timeSheetKey@431";
@@ -49,17 +47,17 @@ export default class NewPassword extends LightningElement {
                 })
                 if(response){
                     await removeCookies('resetEmail');
-                    await showAlert('Success','Password reset successfully','success');
+                    await showAlert(this,'Success','Password reset successfully','success');
                     this.gotoLogin();
                 }
                 else{
-                    await showAlert('Error','Error resetting password','error');
+                    await showAlert(this,'Error','Error resetting password','error');
                 }
             }
         }
         catch(err){
             console.log('Error in resetting password: ',JSON.stringify(err));
-            await showAlert('Error','Error resetting password','error');
+            await showAlert(this,'Error','Error resetting password','error');
         }
     }
 

@@ -4,7 +4,7 @@ public without sharing class Tasks {
     public static List<Task__c> getAllTasks(String userId,String specificDate){
         try {
             Date taskDate = Date.valueOf(specificDate);
-            List<Task__c> tasks = [SELECT Id, Name, Duration__c,StartTime__c,EndTime__c, Description__c FROM Task__c WHERE UserId__c = :userId AND Date__c = :taskDate];
+            List<Task__c> tasks = [SELECT Id, Name, Duration__c,StartTime__c,EndTime__c, Description__c FROM Task__c WHERE UserId__c = :userId AND Date__c = :taskDate ORDER BY StartTime__c ASC];
 
             if(tasks.isEmpty()){
                 return new List<Task__c>();
@@ -56,12 +56,14 @@ public without sharing class Tasks {
     }
 
     @AuraEnabled
-    public static Boolean updateTask(String taskId,String taskName,String taskDescription,Integer Duration,String startTime , String endTime){
+    public static Boolean updateTask(String taskId, String taskName, String taskDescription, Integer Duration, String startTime, String endTime) {
         try {
-            Task__c existingTask = [SELECT Id, Name, Duration__c,StartTime__c,EndTime__c, Description__c FROM Task__c WHERE Id =:taskId LIMIT 1];
+            // Get the task to update
+            Task__c existingTask = [SELECT Id, Name, Duration__c, StartTime__c, EndTime__c, Description__c 
+                                    FROM Task__c WHERE Id = :taskId LIMIT 1];
 
             if(existingTask != null){
-                // Parsing Format
+                // Parse startTime and endTime
                 Time sTime = Time.newInstance(
                     Integer.valueOf(startTime.split(':')[0]),
                     Integer.valueOf(startTime.split(':')[1]),
@@ -76,21 +78,39 @@ public without sharing class Tasks {
                     0
                 );
 
-
+                // Update current task
                 existingTask.Name = taskName;
                 existingTask.Description__c = taskDescription;
                 existingTask.Duration__c = Duration;
                 existingTask.StartTime__c = sTime;
                 existingTask.EndTime__c = eTime;
                 update existingTask;
+
+                // Get subsequent tasks that start after this task
+                List<Task__c> subsequentTasks = [SELECT Id, StartTime__c, EndTime__c, Duration__c
+                                                 FROM Task__c
+                                                 WHERE StartTime__c > :existingTask.StartTime__c
+                                                 ORDER BY StartTime__c ASC];
+
+                // Shift subsequent tasks
+                Time prevEnd = eTime;
+                for(Task__c t : subsequentTasks){
+                    t.StartTime__c = prevEnd;
+                    t.EndTime__c = prevEnd.addMinutes(Integer.valueOf(Math.round(t.Duration__c)));
+                    prevEnd = t.EndTime__c;
+                }
+
+                if(!subsequentTasks.isEmpty()){
+                    update subsequentTasks;
+                }
+
                 return true;
-            }
-            else{
+            } else {
                 return false;
             }
-            
+
         } catch (Exception e) {
-            // throw new AuraHandledException(e.getMessage());
+            System.debug('Error updating task: ' + e.getMessage());
             return false;
         }
     }

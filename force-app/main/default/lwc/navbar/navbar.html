@@ -1,20 +1,21 @@
 <template>
     <header class="header">
         <nav class="navbar">
-            <a href="#" class="brand">TimeSheet Pro</a>
-            <div class="nav-left">
-                <button class="nav-btn active" onclick={gotoHome}>Dashboard</button>
-                <button if:true={punchedIn} class="nav-btn" id="punchInBtn" onclick={openPunchForm}>Punch In</button>
-                <button if:true={punchedOut} class="nav-btn" id="punchOutBtn" onclick={checkUserPunchHour}>Punch Out</button>
-            </div>
+            <a onclick={gotoHome} class="brand">TimeSheet Pro</a>
             <div class="user-menu">
-                <button class="user-btn" onclick={toggleUserDropdown}>
-                    {fullName}
-                </button>
-                <div class="dropdown-menu" id="userDropdown" if:true={userDropdown}>
-                    <div class="dropdown-item" onclick={gotoProfile}>Profile</div>
-                    <div class="dropdown-item" onclick={gotoReport}>Reports</div>
-                    <div class="dropdown-item" onclick={logOutUser}>Logout</div>
+                <div class="punch-btns">
+                    <button if:true={punchedIn} class="btn-punch-in" id="punchInBtn" onclick={openPunchForm}>Punch In</button>
+                    <button if:true={punchedOut} class="btn-punch-out" id="punchOutBtn" onclick={checkUserPunchHour}>Punch Out</button>
+                </div>
+                <div class="user-info">
+                    <button class="user-btn" onclick={toggleUserDropdown}>
+                        {fullName}
+                    </button>
+                    <div class="dropdown-menu" id="userDropdown" if:true={userDropdown}>
+                        <div class="dropdown-item" onclick={gotoProfile}>Profile</div>
+                        <div class="dropdown-item" onclick={gotoReport}>Reports</div>
+                        <div class="dropdown-item" onclick={logOutUser}>Logout</div>
+                    </div>
                 </div>
             </div>
         </nav>

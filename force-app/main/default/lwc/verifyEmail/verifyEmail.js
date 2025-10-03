@@ -51,7 +51,7 @@ export default class VerifyEmail extends LightningElement {
             })
             if(response){
                 this.isOTP = true;
-                await showAlert('Success','Email sent successfully','success');
+                await showAlert(this,'Success','Email sent successfully','success');
             }
             let seconds = 5;
             let id = setInterval(() => {
@@ -67,7 +67,7 @@ export default class VerifyEmail extends LightningElement {
         catch(err){
             console.log('Error in Sending OTP: ',JSON.stringify(err));
             console.log('Error message: ',err?.message);
-            await showAlert('Error',err?.body?.message,'error');
+            await showAlert(this,'Error',err?.body?.message,'error');
         }
     }
 
@@ -79,14 +79,14 @@ export default class VerifyEmail extends LightningElement {
             let otp = window.CryptoJS.AES.decrypt(encryptOTP,encryptionKey).toString(window.CryptoJS.enc.Utf8);
             if(otp == this.otp){
                 await setCookies('resetEmail',window.CryptoJS.AES.encrypt(this.email,encryptionKey).toString());
-                await showAlert('Success','Email verified successfully','success');
+                await showAlert(this,'Success','Email verified successfully','success');
                 removeCookies('otp');
                 let event = new CustomEvent('navigate', {detail: 'newPassword'});
                 this.dispatchEvent(event);
-                await setCookies('activeParent','resetPassword');
+                await setCookies('activeParent','forgetPassword');
             }
             else{
-                await showAlert('Error','Invalid OTP','error');
+                await showAlert(this,'Error','Invalid OTP','error');
             }
         }
         catch(err){
