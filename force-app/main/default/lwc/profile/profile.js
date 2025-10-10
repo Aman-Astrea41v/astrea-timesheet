@@ -1,10 +1,16 @@
 import getUsers from '@salesforce/apex/Users.getUsers';
-import { getCookies } from 'c/utils';
-import { LightningElement, track } from 'lwc';
+import updateUserProfile from '@salesforce/apex/Users.updateUserProfile';
+import { getCookies, showAlert } from 'c/utils';
+import { LightningElement, track, wire } from 'lwc';
+import { MessageContext } from 'lightning/messageService';
 
 export default class Profile extends LightningElement {
     @track user = {};
     isLoading = false;
+    cannotEdit = true;
+
+    @wire(MessageContext)
+    messageContext
 
     async connectedCallback(){
         try{
@@ -32,4 +38,51 @@ export default class Profile extends LightningElement {
         }
     }
 
+    updateField(event) {
+        const field = event.target.dataset.field;
+        if (field) {
+            this.user = { ...this.user, [field]: event.target.value };
+        }
+    }
+
+    get editButtonText(){
+        return !this.cannotEdit ? 'Update Profile' : 'Edit Profile';
+    }
+
+    async updateProfile(){
+        try{
+            if(this.cannotEdit){
+                this.cannotEdit = false;
+            }
+            else{
+                this.isLoading = true;
+                const uid = await getCookies('uid');
+                const response = await updateUserProfile({
+                    userId: uid,
+                    firstName: this.user.fname,
+                    lastName: this.user.lname,
+                    address: {
+                        street: this.user.street,
+                        city: this.user.city
+                    },
+                    collegeName: this.user.collegeName,
+                    phone: this.user.phone,
+                    email: this.user.email,
+                    username: this.user.username
+                })
+                if(response){
+                    await showAlert(this,'Success', 'Profile Updated Successfully', 'success');
+                }
+                else{
+                    await showAlert(this,'Error', 'Error Updating Profile', 'error');
+                }
+                this.cannotEdit = true;
+                this.isLoading = false;
+            }
+        }
+        catch(err){
+            console.log('Error from Profile: ',JSON.stringify(err));
+            console.log('Error Message from Profile: ',err?.message);
+        }
+    }
 }

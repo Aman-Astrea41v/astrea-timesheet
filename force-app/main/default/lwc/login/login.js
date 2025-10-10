@@ -1,15 +1,20 @@
-import { LightningElement } from 'lwc';
+import { LightningElement,wire } from 'lwc';
 import getUsers from "@salesforce/apex/Users.getUsers";
-import { showAlert, setCookies, showToast } from 'c/utils';
+import { showAlert, setCookies } from 'c/utils';
 import CryptoJS from "@salesforce/resourceUrl/CryptoJS";
 import { loadScript } from 'lightning/platformResourceLoader';
 import astreaLogo from "@salesforce/resourceUrl/astreaLogo";
+import { MessageContext } from 'lightning/messageService';
+
 
 export default class Login extends LightningElement {
     email;
     password;
     isPassword = true;
     astreaLogo;
+
+    @wire(MessageContext)
+    messageContext;
 
     connectedCallback(){
         loadScript(this, CryptoJS)

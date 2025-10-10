@@ -88,9 +88,9 @@ public without sharing class Tasks {
 
                 // Get subsequent tasks that start after this task
                 List<Task__c> subsequentTasks = [SELECT Id, StartTime__c, EndTime__c, Duration__c
-                                                 FROM Task__c
-                                                 WHERE StartTime__c > :existingTask.StartTime__c
-                                                 ORDER BY StartTime__c ASC];
+                FROM Task__c
+                WHERE StartTime__c > :existingTask.StartTime__c
+                ORDER BY StartTime__c ASC];
 
                 // Shift subsequent tasks
                 Time prevEnd = eTime;
@@ -114,4 +114,55 @@ public without sharing class Tasks {
             return false;
         }
     }
+
+    @AuraEnabled
+    public static Boolean deleteTask(String taskId, String userId) {
+        try {
+            Report__c report = [SELECT Id,Punch_In__c FROM Report__c WHERE UserId__c = :userId AND Date__c = TODAY LIMIT 1];
+            Time punchInTime = report.Punch_In__c;
+            Task__c taskToDelete = [SELECT Id, StartTime__c, EndTime__c, Duration__c 
+                                    FROM Task__c WHERE Id = :taskId LIMIT 1];
+
+            if(taskToDelete == null) {
+                return false;
+            }
+
+            List<Task__c> prevList = [SELECT Id, EndTime__c 
+                                    FROM Task__c 
+                                    WHERE EndTime__c <= :taskToDelete.StartTime__c
+                                    AND Date__c = TODAY
+                                    AND UserId__c = :userId 
+                                    ORDER BY EndTime__c DESC 
+                                    LIMIT 1];
+            Task__c previousTask = prevList.isEmpty() ? null : prevList[0];
+
+            List<Task__c> subsequentTasks = [SELECT Id, StartTime__c, EndTime__c, Duration__c
+                                            FROM Task__c
+                                            WHERE StartTime__c > :taskToDelete.StartTime__c
+                                            AND Date__c = TODAY
+                                            ORDER BY StartTime__c ASC];
+
+            delete taskToDelete;
+
+            Time newStart = previousTask != null ? previousTask.EndTime__c : punchInTime;
+
+            for(Task__c t : subsequentTasks){
+                t.StartTime__c = newStart;
+                t.EndTime__c = newStart.addMinutes(Integer.valueOf(t.Duration__c));
+                newStart = t.EndTime__c;
+            }
+
+            if(!subsequentTasks.isEmpty()){
+                update subsequentTasks;
+            }
+
+            return true;
+
+        } catch(Exception e) {
+            System.debug('Error deleting task: ' + e.getMessage());
+            return false;
+        }
+    }
+
+
 }

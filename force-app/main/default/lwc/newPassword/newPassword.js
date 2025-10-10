@@ -1,14 +1,17 @@
-import { LightningElement } from 'lwc';
+import { LightningElement,wire } from 'lwc';
 import { setCookies,getCookies, showAlert, removeCookies } from 'c/utils';
 import resetUserPassword from '@salesforce/apex/Users.resetUserPassword';
 import CryptoJS from "@salesforce/resourceUrl/CryptoJS";
 import { loadScript } from 'lightning/platformResourceLoader';
-
+import { MessageContext } from 'lightning/messageService';
 
 export default class NewPassword extends LightningElement {
     password;
     conPassword;
     error = '';
+
+    @wire(MessageContext)
+    messageContext;
 
     connectedCallback(){
         loadScript(this, CryptoJS)

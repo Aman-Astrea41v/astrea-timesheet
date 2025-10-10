@@ -5,19 +5,19 @@ import { getCookies } from 'c/utils';
 
 export default class Main extends LightningElement {
     @track width = window.innerWidth;
-    @track isMobile = this.isMobileDevice() || window.innerWidth < 850;
+    @track isMobile = this.isMobileDevice();
     @track currentPage = this.isMobile ? 'noAccess' : 'login';
 
     subscription;
     boundUpdateWidth;
 
     @wire(MessageContext)
-    MessageContext;
+    messageContext;
 
     connectedCallback() {
         if (!this.subscription) {
             this.subscription = subscribe(
-                this.MessageContext,
+                this.messageContext,
                 MY_CHANNEL,
                 (message) => this.handleMessage(message)
             );
@@ -39,15 +39,19 @@ export default class Main extends LightningElement {
     }
 
     isMobileDevice() {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-            navigator.userAgent
+        return (
+            /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                navigator.userAgent
+            ) ||
+            (navigator.maxTouchPoints && navigator.maxTouchPoints > 1) ||
+            screen.width < 850
         );
     }
 
     updateWidth() {
         this.width = window.innerWidth;
 
-        this.isMobile = this.isMobileDevice() || this.width < 850;
+        this.isMobile = this.isMobileDevice();
 
         if (this.isMobile) {
             this.currentPage = 'noAccess';
@@ -72,7 +76,7 @@ export default class Main extends LightningElement {
         this.currentPage = event.detail;
     }
 
-    // Template getters
+
     get isLogin() {
         return !this.isMobile && this.currentPage === 'login';
     }

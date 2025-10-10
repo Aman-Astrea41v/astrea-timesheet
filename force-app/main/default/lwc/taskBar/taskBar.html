@@ -48,9 +48,29 @@
                                                 {task.formattedDuration}
                                             </span>
                                         </td>
-                                        <td class="text-muted">{task.description}</td>
-                                        <td>
-                                            <button class="btn btn-primary" onclick={editTask} data-id={task.id}>Edit</button>
+                                        <td class="text-muted">{task.formatDescription}</td>
+                                        <td class="btn-actions">
+
+                                            <lightning-icon
+                                                icon-name="utility:edit"
+                                                alternative-text="Edit"
+                                                title="Edit"
+                                                size="x-small"
+                                                class="icon edit-icon edit-btn"
+                                                onclick={editTask}
+                                                data-id={task.id}>
+                                            </lightning-icon>
+
+                                            <lightning-icon
+                                                icon-name="utility:delete"
+                                                alternative-text="Delete"
+                                                title="Delete"
+                                                size="x-small"
+                                                class="icon delete-icon del-btn"
+                                                onclick={deleteTask}
+                                                data-id={task.id}>
+                                            </lightning-icon>
+                                            
                                         </td>
                                     </tr>
                                 </template>
@@ -133,7 +153,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick={closeTaskForm}>Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick={saveTask}>Save Task</button>
+                    <button type="button" class="btn btn-primary" onclick={saveTask} disabled={allowSaveTask}>Save Task</button>
                 </div>
             </form>
         </div>

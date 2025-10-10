@@ -1,0 +1,30 @@
+<template>
+    <div class="toast-container">
+        <template if:true={hasToasts}>
+            <template for:each={toasts} for:item="toast">
+                <div key={toast.id} 
+                     data-id={toast.id}
+                     class={toast.variant}>
+                    <div class="toast-content">
+                        <div class="toast-icon">{toast.icon}</div>
+                        <div class="toast-body">
+                            <div class="toast-title">{toast.title}</div>
+                            <template if:true={toast.message}>
+                                <div class="toast-message">{toast.message}</div>
+                            </template>
+                        </div>
+                        <button class="toast-close" 
+                                data-id={toast.id}
+                                onclick={handleClose}
+                                aria-label="Close">
+                            ×
+                        </button>
+                    </div>
+                    <template if:true={toast.duration}>
+                        <div class="progress-bar"></div>
+                    </template>
+                </div>
+            </template>
+        </template>
+    </div>
+</template>

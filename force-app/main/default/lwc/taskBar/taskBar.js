@@ -6,6 +6,7 @@ import { subscribe, MessageContext } from 'lightning/messageService';
 import getAllTasks from '@salesforce/apex/Tasks.getAllTasks';
 import createTask from '@salesforce/apex/Tasks.createTask';
 import updateTask from '@salesforce/apex/Tasks.updateTask';
+import deleteTask from '@salesforce/apex/Tasks.deleteTask';
 // Report Class
 import getUserPunchStatus from '@salesforce/apex/Reports.getUserPunchStatus';
 
@@ -19,7 +20,7 @@ export default class taskBar extends LightningElement {
     Modalminutes = 0;
     punchInTime;
     punchOutTime;
-    startTimePerTask;
+    @track startTimePerTask;
     isEdit;
     isPunchedIn = false;
     isLoading = false;
@@ -32,7 +33,7 @@ export default class taskBar extends LightningElement {
     @track statusPanel = { class: 'status-panel status-pending', indicator: 'Waiting', text: 'Not Started',workType:'Please punch in to begin',punchTime: '' ,dailyTotal: '0 H 0 M' };
 
     @wire(MessageContext)
-        MessageContext;
+        messageContext;
 
     // Run when the component is mounted/ Screen is refreshed
     async connectedCallback(){
@@ -45,7 +46,7 @@ export default class taskBar extends LightningElement {
             this.isLoading = true;
             await this.getTodaysTask(true);
             if(!this.subscription){
-                this.subscription = subscribe(this.MessageContext, MY_CHANNEL, (message) => {
+                this.subscription = subscribe(this.messageContext, MY_CHANNEL, (message) => {
                     this.handleMessage(message)
                 })
             }
@@ -54,7 +55,7 @@ export default class taskBar extends LightningElement {
             const uid = await getCookies('uid');
             let dailyTotal = await getCookies('dailyTotal'+uid);
             this.calculateDailyTotal();
-            if( dailyTotal.split(' ')[0] != this.statusPanel.dailyTotal.split(' ')[0] || dailyTotal.split(' ')[2] != this.statusPanel.dailyTotal.split(' ')[2] ){
+            if( dailyTotal && dailyTotal.split(' ')[0] != this.statusPanel.dailyTotal.split(' ')[0] || dailyTotal.split(' ')[2] != this.statusPanel.dailyTotal.split(' ')[2] ){
                 dailyTotal = this.statusPanel.dailyTotal;
             }
             const specificDate = new Date().toISOString().split('T')[0];
@@ -100,6 +101,7 @@ export default class taskBar extends LightningElement {
         await this.getTodaysTask(true);
         this.tasks = this.tasks.map(task => ({
             ...task,
+            formatDescription: task.description ? task.description.substring(0, 40) + '...' : '',
             formattedDuration: this.formatDuration(task.duration)
         }));
         this.isLoading = false;
@@ -125,16 +127,18 @@ export default class taskBar extends LightningElement {
 
     handleMessage(message){
         if(message.type == 'PUNCHIN'){
+            const uid = getCookies('uid');
             this.isPunchedIn = true;
             this.punchInTime = message.time;
             this.newTask.startTime = new Date(message.time).toLocaleTimeString('en-GB', {
                     hour12: false,
                     hour: '2-digit',
                     minute: '2-digit',
-                    second: '2-digit'
+                    second: '2-digit'   
             });
             this.startTimePerTask = this.newTask.startTime;
             this.statusPanel = { class: 'status-panel status-active', indicator: 'Active', text: 'Currently Working',workType:message.workMode == 'WFH' ? 'Work from Home': 'Work from Office',punchTime:'Started : ' + new Date(message.time).toLocaleString().substring(11, 19) ,dailyTotal: '0 H 0 M'}
+            setCookies('dailyTotal'+uid, '0 H 0 M');
         }
         else if(message.type == 'PUNCHOUT'){
             this.isPunchedIn = false;
@@ -169,7 +173,8 @@ export default class taskBar extends LightningElement {
                             startTime: msToTime(task.StartTime__c),
                             endTime: msToTime(task.EndTime__c),
                             formattedDuration: this.formatDuration(task.Duration__c),
-                            description: task.Description__c
+                            description: task.Description__c,
+                            formatDescription: task.Description__c ? task.Description__c.substring(0, 40) + '...' : '',
                         })
                     })
                 }
@@ -201,7 +206,8 @@ export default class taskBar extends LightningElement {
                             startTime: msToTime(task.StartTime__c),
                             endTime: msToTime(task.EndTime__c),
                             formattedDuration: this.formatDuration(task.Duration__c),
-                            description: task.Description__c
+                            description: task.Description__c,
+                            formatDescription: task.Description__c ? task.Description__c.substring(0, 40) + '...' : '',
                         })
                     })
                 }
@@ -248,6 +254,10 @@ export default class taskBar extends LightningElement {
         return this.isEdit ? 'Edit Task' : 'New Task';
     }
 
+    get allowSaveTask(){
+        return !this.newTask.title || (!this.Modalhours > 0 && !this.Modalminutes > 0);
+    }
+
     editTask(event){
         this.showTaskForm = true;
         this.isEdit = true;
@@ -258,6 +268,36 @@ export default class taskBar extends LightningElement {
         })
         this.Modalhours = parseInt(this.newTask.duration / 60);
         this.Modalminutes = parseInt(this.newTask.duration % 60);
+    }
+
+    async deleteTask(event){
+        try{
+            this.isLoading = true;
+            const uid = await getCookies('uid');
+            const taskId = event.target.dataset.id;
+
+            const response = await deleteTask({
+                taskId:taskId,
+                userId: uid
+            });
+            if(response){
+                await showAlert(this,'Success', 'Task Deleted Successfully', 'success');
+            }
+            else{
+                await showAlert(this,'Error', 'Error deleting Task', 'error');
+            }
+            await this.updateTask();
+            this.calculateDailyTotal();
+            this.startTimePerTask = this.calculateStartTime(this.punchInTime,this.statusPanel.dailyTotal);
+            await setCookies('dailyTotal'+ uid, this.statusPanel.dailyTotal);
+            this.selectedDate = null;
+            this.isLoading = false;
+        }
+        catch(err){
+            console.log('Taskbar Error Save Task: ',JSON.stringify(err));
+            console.log('Taskbar Error Message Save Task: ',err?.message);
+            this.isLoading = false;
+        }
     }
 
     // Open modal
@@ -356,6 +396,8 @@ export default class taskBar extends LightningElement {
             await setCookies('dailyTotal'+ uid, this.statusPanel.dailyTotal);
             this.selectedDate = null;
             this.closeTaskForm();
+            this.Modalhours = 0;
+            this.Modalminutes = 0;
             this.isLoading = false;
         }
         catch(err){

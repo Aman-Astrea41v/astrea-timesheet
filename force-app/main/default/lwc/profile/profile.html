@@ -19,35 +19,35 @@
                     <form class="profile-form">
                         <div class="form-group">
                             <label class="form-label">First Name</label>
-                            <input type="text" class="form-control" value={user.fname} readonly>
+                            <input type="text" class="form-control" value={user.fname} readonly={cannotEdit} onchange={updateField} data-field="fname"> 
                         </div>
                         <div class="form-group">
                             <label class="form-label">Last Name</label>
-                            <input type="text" class="form-control" value={user.lname} readonly>
+                            <input type="text" class="form-control" value={user.lname} readonly={cannotEdit} onchange={updateField} data-field="lname">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Username</label>
-                            <input type="text" class="form-control" value={user.username} readonly>
+                            <input type="text" class="form-control" value={user.username} readonly={cannotEdit} onchange={updateField} data-field="username">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Email Address</label>
-                            <input type="email" class="form-control" value={user.email} readonly>
+                            <input type="email" class="form-control" value={user.email} readonly={cannotEdit} onchange={updateField} data-field="email">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" value={user.phone} readonly>
+                            <input type="tel" class="form-control" value={user.phone} readonly={cannotEdit} onchange={updateField} data-field="phone">
                         </div>
                         <div class="form-group">
                             <label class="form-label">College Name</label>
-                            <input type="text" class="form-control" value={user.collegeName} readonly>
+                            <input type="text" class="form-control" value={user.collegeName} readonly={cannotEdit} onchange={updateField} data-field="collegeName">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Street Address</label>
-                            <input type="text" class="form-control" value={user.street} readonly>
+                            <input type="text" class="form-control" value={user.street} readonly={cannotEdit} onchange={updateField} data-field="street">
                         </div>
                         <div class="form-group">
                             <label class="form-label">City</label>
-                            <input type="text" class="form-control" value={user.city} readonly>
+                            <input type="text" class="form-control" value={user.city} readonly={cannotEdit} onchange={updateField} data-field="city">
                         </div>
                         <div class="form-group">
                             <label class="form-label">State</label>
@@ -57,7 +57,11 @@
                             <label class="form-label">Country</label>
                             <input type="text" class="form-control" value={user.country} readonly>
                         </div>
+
                     </form>
+                    <div class="btn-container">
+                        <button class="btn btn-primary" onclick={updateProfile}>{editButtonText}</button>
+                    </div>
                 </div>
             </div>
         </div>

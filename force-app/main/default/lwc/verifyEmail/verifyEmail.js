@@ -1,8 +1,9 @@
-import { LightningElement } from 'lwc';
+import { LightningElement,wire } from 'lwc';
 import { setCookies,showAlert, getCookies, removeCookies } from 'c/utils';
 import sendOTPForResetPassword from '@salesforce/apex/TSNotification.sendOTPForResetPassword';
 import CryptoJS from "@salesforce/resourceUrl/CryptoJS";
 import { loadScript } from 'lightning/platformResourceLoader';
+import { MessageContext } from 'lightning/messageService';
 
 export default class VerifyEmail extends LightningElement {
     email='';
@@ -11,6 +12,9 @@ export default class VerifyEmail extends LightningElement {
     otp;
     otpRelax = false;
     otpBtnLabel = "Send Verification Code";
+
+    @wire(MessageContext)
+    messageContext;
 
 
     connectedCallback(){

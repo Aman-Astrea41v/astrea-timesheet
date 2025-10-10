@@ -1,6 +1,10 @@
 To do:
 1. Make everything encrypted using Custom_Setting to store key and use CryptoJS in Apex Class.Reset password is already encrypted.
 
+Remove seconds -> Not possible
+Add Category Picklist(Apex,Flow,) and an input field
+Add dailyTotal in Report to retrieve for every day task.
+
 
 Report Status not in sync -> Done
 From to update according to edit in another after tasks -> Done

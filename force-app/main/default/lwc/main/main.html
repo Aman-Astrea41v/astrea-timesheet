@@ -4,6 +4,7 @@
     </template>
 
     <template if:false={isMobile}>
+        <c-toast></c-toast>
         <c-login if:true={isLogin} onnavigate={navigatePage}></c-login>
         <c-home-page if:true={isHome} onnavigate={navigatePage}></c-home-page>
         <c-verify-email if:true={isVerifyMail} onnavigate={navigatePage}></c-verify-email>

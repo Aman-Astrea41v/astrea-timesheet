@@ -1,14 +1,14 @@
-import LightningAlert from 'lightning/alert';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { publish } from 'lightning/messageService';
+import TOAST_MESSAGE_CHANNEL from '@salesforce/messageChannel/ToastMessage__c';
 
-export function showAlert(component,title, message, theme = 'info') {
-    const event = new ShowToastEvent({
-        title: title,
-        message: message,
-        variant: theme, 
-        mode: 'pester'
+export function showAlert(component, title, message, theme = 'info') {
+    if (!component.messageContext) return;
+
+    publish(component.messageContext, TOAST_MESSAGE_CHANNEL, {
+        title,
+        message,
+        variant: theme
     });
-    component.dispatchEvent(event);
 }
 
 
