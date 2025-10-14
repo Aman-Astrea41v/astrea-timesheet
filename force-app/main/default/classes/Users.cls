@@ -62,17 +62,18 @@ public without sharing class Users {
             user.Last_Name__c = lastName;
             user.Address__Street__s  = address.get('street');
             user.Address__City__s = address.get('city');
+            user.Address__CountryCode__s = address.get('country');
+            user.Address__StateCode__s = address.get('state');
             user.College_Name__c = collegeName;
             user.Phone__c = phone;
             user.Name = username;
             user.Email__c = email;
 
             update user;
-            return true;
         } catch (Exception e) {
-            System.debug('Error while updating user: ' + e.getMessage());
-            return false;
+            throw new AuraHandledException(e.getMessage());
         }
+        return true;
     }
 
 

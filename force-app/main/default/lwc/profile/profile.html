@@ -48,13 +48,40 @@
                         <div class="form-group">
                             <label class="form-label">City</label>
                             <input type="text" class="form-control" value={user.city} readonly={cannotEdit} onchange={updateField} data-field="city">
-                        </div>
+                        </div> 
                         <div class="form-group">
                             <label class="form-label">State</label>
-                            <input type="text" class="form-control" value={user.state} readonly>
+                            <select 
+                                class="form-control" 
+                                onchange={handleStateChange} 
+                                disabled={cannotEdit}>
+                                <template for:each={statesWithSelection} for:item="state">
+                                    <option 
+                                        key={state.value} 
+                                        value={state.value} 
+                                        selected={state.selected}>
+                                        {state.label}
+                                    </option>
+                                </template>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Country</label>
+                             <select 
+                                class="form-control" 
+                                onchange={handleCountryChange} 
+                                disabled={cannotEdit}
+                                >
+                                <template for:each={countryWithSelection} for:item="country">
+                                    <option 
+                                        key={country.value} 
+                                        value={country.value}
+                                        selected={country.selected}
+                                        >
+                                        {country.label}
+                                    </option>
+                                </template>
+                            </select>
                             <input type="text" class="form-control" value={user.country} readonly>
                         </div>
 

@@ -68,8 +68,12 @@ export default class Navbar extends LightningElement {
         this.userDropdown = !this.userDropdown;
     }
 
-    handleOptionChange(event){
-        this.workingMode = event.target.value;
+
+
+     handleOptionChange(event) {
+        const radio = event.currentTarget.querySelector('input[type="radio"]');
+        radio.checked = true;
+        this.workingMode = radio.value;
     }
 
     closeModal(){

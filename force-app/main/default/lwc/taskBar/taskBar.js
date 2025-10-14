@@ -55,14 +55,16 @@ export default class taskBar extends LightningElement {
             const uid = await getCookies('uid');
             let dailyTotal = await getCookies('dailyTotal'+uid);
             this.calculateDailyTotal();
-            if( dailyTotal && dailyTotal.split(' ')[0] != this.statusPanel.dailyTotal.split(' ')[0] || dailyTotal.split(' ')[2] != this.statusPanel.dailyTotal.split(' ')[2] ){
-                dailyTotal = this.statusPanel.dailyTotal;
-            }
-            const specificDate = new Date().toISOString().split('T')[0];
-            const reportData = await getUserPunchStatus({userId:uid,specificDate:specificDate});
             if(dailyTotal == null){
                 dailyTotal = this.formatDuration(0);
             }
+            else{
+                if( dailyTotal && dailyTotal.split(' ')[0] != this.statusPanel.dailyTotal.split(' ')[0] || dailyTotal.split(' ')[2] != this.statusPanel.dailyTotal.split(' ')[2] ){
+                    dailyTotal = this.statusPanel.dailyTotal;
+                }
+            }
+            const specificDate = new Date().toISOString().split('T')[0];
+            const reportData = await getUserPunchStatus({userId:uid,specificDate:specificDate});
             if(reportData.punchedIn == 'true' && reportData.punchedOut == 'false'){
                 this.isPunchedIn = true;
                 this.punchInTime = reportData?.punchInTime.split('.')[0]
