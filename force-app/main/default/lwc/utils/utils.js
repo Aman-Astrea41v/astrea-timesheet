@@ -52,8 +52,7 @@ export function msToTime(ms){
         let totalSeconds = Math.floor(ms / 1000);
         let hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
         let minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-        let seconds = String(totalSeconds % 60).padStart(2, '0');
-        return `${hours}:${minutes}:${seconds}`;
+        return `${hours}:${minutes}`;
 }
 
 // It returns time difference between punchIn and punchOut Time.

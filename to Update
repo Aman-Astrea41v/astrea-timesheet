@@ -1,27 +1,9 @@
 To do:
-1. Make everything encrypted using Custom_Setting to store key and use CryptoJS in Apex Class.Reset password is already encrypted.
-
-Remove seconds
-Add Category Picklist(Apex,Flow,) and an input field
-Add dailyTotal in Report to retrieve for every day task.
-Sync time range after Undelete 
-
-Options -
-Salesforce Admin
-Apex
-lwc
-Aura
-Integration
-Agentforce
-Service Cloud
-Others - Text field
+1. Store Daily Total and get from Report and Show After each task added or deleted update it.
+2. From and To is to be editable manually by the user and create their fields so user can select it.
+3. In Status Panel's Daily Total show punch in and punch out difference and In task bar's Daily Total show all task total duration.
 
 
-Report Status not in sync -> Done
-From to update according to edit in another after tasks -> Done
-Email not received on forget password -> Done
-Make Punch in as a button and remove dashboard -> Done
-working on desktop mode -> Done
 
 Feature: 
 1. Create daily task report like - For daily task : you can upload screenshots,Desc,Question.

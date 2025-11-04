@@ -16,6 +16,22 @@ public without sharing class Reports {
     }
 
     @AuraEnabled
+    public static Decimal getDailyTotal(String userId,String specificDate){
+        try {
+            Date reportDate = Date.valueOf(specificDate);
+            List<Report__c> report = [SELECT Id,Daily_Total_Time__c FROM Report__c WHERE UserId__c = :userId AND Date__c = :reportDate LIMIT 1];
+            if(report.isEmpty()){
+                return 0;
+            }
+            else{
+                return report[0].Daily_Total_Time__c;
+            }
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    @AuraEnabled
     public static List<Report__c> getReportByWorkMode(String userId,String workMode){
         try {
             return [

@@ -7,7 +7,7 @@
 
                         <div class="task-filter-panel">
                             <input type="date" class="filter-date-task" onchange={filterTaskByDate} max={today}>
-                            <button class="btn btn-info" onclick={getTodaysTask}>Today</button>
+                            <button class="btn btn-info" onclick={getTodaysTask} disabled={isToday}>Today</button>
                         </div>
 
                         <button class="btn btn-success" id="addTaskBtn" onclick={openTaskForm} disabled={disableTaskButton}>
@@ -41,7 +41,12 @@
                             <tbody id="tasksTableBody" if:true={tasks.length}>
                                 <template for:each={tasks} for:item="task">
                                     <tr key={task.id}>
-                                        <td class="font-weight-bold">{task.title}</td>
+                                        <td class="font-weight-bold">
+                                            {task.formatTitle}
+                                            <span class="status-badge category-badge" style="margin-left: 0.5rem;">
+                                                {task.category}
+                                            </span>
+                                        </td>
                                         <td><code>{task.startTime} - {task.endTime}</code></td>
                                         <td>
                                             <span class="status-badge status-in">
@@ -84,7 +89,10 @@
                                     </td>
                                 </tr>
                             </tbody>
+
                         </table>
+
+                        <div class="font-weight-bold" style="color: #2c5aa0; font-size:medium;">Daily Total: {statusPanel.dailyTotal}</div>
                     </div>
                 </div>
 
@@ -115,7 +123,23 @@
                         <label class="form-label">Task Title</label>
                         <input type="text" class="form-control" id="taskTitle" placeholder="Enter task title" value={newTask.title} onchange={handleTitleChange} required>
                     </div>
-                    
+
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select class="form-control" onchange={handleCategoryChange}>
+                            <template for:each={categoryOptions} for:item="c">
+                                <option key={c.value} value={c.value} selected={c.selected}>{c.label}</option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <template if:true={showOtherCategoryText}>
+                        <div class="form-group">
+                            <label class="form-label">Please specify</label>
+                            <input type="text" class="form-control" placeholder="Enter other task" value={newTask.otherCategory} onchange={handleOtherCategory}>
+                        </div>
+                    </template>
+
                     <div class="form-group">
                         <label class="form-label">Duration & Time Range</label>
                         <div class="time-inputs">
@@ -137,20 +161,22 @@
                             </div>
                             <div>
                                 <label class="form-label" style="font-size: 0.875rem; margin-bottom: 0.25rem;">From</label>
-                                <div class="time-display" id="taskFrom">{newTask.startTime}</div>
+                                <input class="time-display" type="time" name="startTime" id="taskFrom" onchange={updateStartTime} value={newTask.startTime}>
                             </div>
                             <div>
                                 <label class="form-label" style="font-size: 0.875rem; margin-bottom: 0.25rem;">To</label>
-                                <div class="time-display" id="taskTo">{newTask.endTime}</div>
+                                <input class="time-display" type="time" name="endTime" id="taskTo" onchange={updateEndTime} value={newTask.endTime}>
                             </div>
                         </div>
                     </div>
+
                     
                     <div class="form-group">
                         <label class="form-label">Description</label>
                         <textarea class="form-control" id="taskDescription" rows="3" placeholder="Describe the work performed (optional)" onchange={handleDescChange}>{newTask.description}</textarea>
                     </div>
                 </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick={closeTaskForm}>Cancel</button>
                     <button type="button" class="btn btn-primary" onclick={saveTask} disabled={allowSaveTask}>Save Task</button>
@@ -158,5 +184,6 @@
             </form>
         </div>
     </div>
+
 
 </template>

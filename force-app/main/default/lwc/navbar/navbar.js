@@ -18,6 +18,8 @@ export default class Navbar extends LightningElement {
     showWarning = false;
     timeLeft;
     fullName;
+    profileText;
+    userEmail;
     isLoading = false;
     // Create Context
     @wire(MessageContext)
@@ -32,6 +34,8 @@ export default class Navbar extends LightningElement {
             const email = await getCookies('email');
             let user = await getUsers({email:email});
             this.fullName = user.First_Name__c + ' ' + user.Last_Name__c;
+            this.profileText = user.First_Name__c[0] + user.Last_Name__c[0];
+            this.userEmail = user.Email__c;
             const specificDate = new Date().toISOString().split('T')[0];
 
             const reportData = await getUserPunchStatus({userId:uid,specificDate:specificDate});

@@ -46,7 +46,6 @@ export default class Profile extends LightningElement {
                 
                 this.states = await getStatesByCountry({ countryName: user.Address__c?.country });
             }
-            console.log(JSON.stringify(this.states));
         } catch (err) {
             console.log('Error from Profile: ', JSON.stringify(err));
             console.log('Error Message from Profile: ', err?.message);
@@ -74,9 +73,12 @@ export default class Profile extends LightningElement {
     }
 
     async handleCountryChange(event) {
+        this.isLoading = true;
         this.user.country = event.target.value;
-        this.states = await getStatesByCountry({ countryName: this.user.country });
+        let selectedCountry = this.countries.find(st => st.value === this.user.country)?.label;
+        this.states = await getStatesByCountry({ countryName: selectedCountry });
         this.user.state = '';
+        this.isLoading = false;
     }
 
     updateField(event) {
@@ -120,6 +122,7 @@ export default class Profile extends LightningElement {
                 this.cannotEdit = true;
             }
         } catch (err) {
+            await showAlert(this, 'Error', 'State Not Available.Ask Admin to add', 'error')
             console.log('Error from Profile: ', JSON.stringify(err));
             console.log('Error Message from Profile: ', err?.message);
         } finally {
