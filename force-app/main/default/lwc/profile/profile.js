@@ -3,7 +3,7 @@ import updateUserProfile from '@salesforce/apex/Users.updateUserProfile';
 // API Class Imports
 import getAllCountries from '@salesforce/apex/ExternalAPICalls.getAllCountries';
 import getStatesByCountry from '@salesforce/apex/ExternalAPICalls.getStatesByCountry';
-import { getCookies, showAlert } from 'c/utils';
+import { getCookies, showAlert, getFormattedNameAndAbbreviation } from 'c/utils';
 import { LightningElement, track, wire } from 'lwc';
 import { MessageContext } from 'lightning/messageService';
 
@@ -27,25 +27,9 @@ export default class Profile extends LightningElement {
                 label,
                 value
             }));
-
             
-            const email = await getCookies('email');    
-            const user = await getUsers({ email: email });
-            if (user) {
-                this.user.abbreviation = user.First_Name__c.charAt(0) + user.Last_Name__c.charAt(0);
-                this.user.fname = user.First_Name__c;
-                this.user.lname = user.Last_Name__c;
-                this.user.email = user.Email__c;
-                this.user.username = user.Name;
-                this.user.collegeName = user.College_Name__c;
-                this.user.phone = user.Phone__c;
-                this.user.street = user.Address__c?.street;
-                this.user.city = user.Address__c?.city;
-                this.user.state = user.Address__c?.state;
-                this.user.country = user.Address__c?.country;
-                
-                this.states = await getStatesByCountry({ countryName: user.Address__c?.country });
-            }
+            this.getUserProfile();
+            
         } catch (err) {
             console.log('Error from Profile: ', JSON.stringify(err));
             console.log('Error Message from Profile: ', err?.message);
@@ -54,10 +38,36 @@ export default class Profile extends LightningElement {
         }
     }
 
+
+    async getUserProfile(){
+        try{
+            const email = await getCookies('email');   
+            const user = await getUsers({ email: email });
+            let formattedName = getFormattedNameAndAbbreviation(user?.Custom_user?.First_Name__c, user?.Custom_user?.Last_Name__c);
+            this.user.abbreviation = formattedName?.profileText;
+            this.user.fullname = formattedName?.fullName;
+            this.user.fname = user?.Custom_user?.First_Name__c || 'N/A';
+            this.user.lname = user?.Custom_user?.Last_Name__c || 'N/A';
+            this.user.email = user?.Custom_user?.Email__c || 'N/A';
+            this.user.username = user?.Custom_user?.Name || 'N/A';
+            this.user.collegeName = user?.Custom_user?.College_Name__c || 'N/A';
+            this.user.phone = user?.Custom_user?.Phone__c || 'N/A';
+            this.user.street = user?.Custom_user?.Address__c?.street || 'N/A';
+            this.user.city = user?.Custom_user?.Address__c?.city || 'N/A';
+            this.user.state = user?.StateCode;
+            this.user.country = user?.CountryCode;
+
+            this.states = await getStatesByCountry({ countryName: user?.Custom_user?.Address__c?.country });
+        }
+        catch(err){
+            console.error(err);
+        }
+    }
+
     get statesWithSelection() {
         return this.states.map(st => ({
             ...st,
-            selected: st.label === this.user.state
+            selected: st.value === this.user.state
         }));
     }
 
@@ -68,7 +78,7 @@ export default class Profile extends LightningElement {
     get countryWithSelection() {
         return this.countries.map(st => ({
             ...st,
-            selected: st.label === this.user.country
+            selected: st.value === this.user.country
         }));
     }
 
@@ -92,6 +102,13 @@ export default class Profile extends LightningElement {
         return !this.cannotEdit ? 'Update Profile' : 'Edit Profile';
     }
 
+    cancelEdit(){
+        this.isLoading = true;
+        this.cannotEdit = true;
+        this.getUserProfile();
+        this.isLoading = false;
+    }
+
     async updateProfile() {
         try {
             if (this.cannotEdit) {
@@ -101,8 +118,6 @@ export default class Profile extends LightningElement {
                 const uid = await getCookies('uid');
                 const response = await updateUserProfile({
                     userId: uid,
-                    firstName: this.user.fname,
-                    lastName: this.user.lname,
                     address: {
                         street: this.user.street,
                         city: this.user.city,

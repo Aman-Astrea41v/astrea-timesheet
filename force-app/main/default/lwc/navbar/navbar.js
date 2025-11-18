@@ -1,7 +1,7 @@
 import { LightningElement, wire } from 'lwc';
 import MY_CHANNEL from "@salesforce/messageChannel/MyChannel__c";
 import { publish, MessageContext } from 'lightning/messageService';
-import { removeCookies, getCookies, setCookies, showAlert, checkForPunchOutIs9Hour } from 'c/utils';
+import { removeCookies, getCookies, setCookies, showAlert, checkForPunchOutIs9Hour, getFormattedNameAndAbbreviation } from 'c/utils';
 import punchInUserApex from '@salesforce/apex/Reports.punchInUserApex';
 import punchOutUserApex from '@salesforce/apex/Reports.punchOutUserApex';
 import getUserPunchStatus from '@salesforce/apex/Reports.getUserPunchStatus';
@@ -33,9 +33,11 @@ export default class Navbar extends LightningElement {
             const uid = await getCookies('uid');
             const email = await getCookies('email');
             let user = await getUsers({email:email});
-            this.fullName = user.First_Name__c + ' ' + user.Last_Name__c;
-            this.profileText = user.First_Name__c[0] + user.Last_Name__c[0];
-            this.userEmail = user.Email__c;
+            let formattedName = getFormattedNameAndAbbreviation(user?.Custom_user?.First_Name__c, user?.Custom_user?.Last_Name__c);
+            this.profileText = formattedName?.profileText;
+            this.fullName = formattedName?.fullName;
+            this.userEmail = user?.Custom_user?.Email__c;
+
             const specificDate = new Date().toISOString().split('T')[0];
 
             const reportData = await getUserPunchStatus({userId:uid,specificDate:specificDate});
@@ -72,7 +74,9 @@ export default class Navbar extends LightningElement {
         this.userDropdown = !this.userDropdown;
     }
 
-
+    get disablePunchIn(){
+        return !this.workingMode;
+    }
 
      handleOptionChange(event) {
         const radio = event.currentTarget.querySelector('input[type="radio"]');
@@ -81,6 +85,7 @@ export default class Navbar extends LightningElement {
     }
 
     closeModal(){
+        this.workingMode = '';
         this.showPunchModal = false;
     }
 
@@ -110,6 +115,10 @@ export default class Navbar extends LightningElement {
             });
 
             if(response){
+                this.punchInTime = (new Date().toLocaleTimeString('en-GB', { 
+                timeZone: 'Asia/Kolkata', 
+                hour12: false 
+                }));
                 await showAlert(this,'Success', 'Punched In Successfully', 'success');
             }
             else{
@@ -136,14 +145,13 @@ export default class Navbar extends LightningElement {
                 timeZone: 'Asia/Kolkata', 
                 hour12: false 
             }));
-            
             let response = await checkForPunchOutIs9Hour(this.punchInTime,punchOutTime); 
             if(!response.status){
                 let { timeDifference } = await checkForPunchOutIs9Hour(punchOutTime,expectedPunchOutTime);
                 let timeLeftInMin = timeDifference;
                 let hours = Math.floor(timeLeftInMin / 60);
                 let minutes = timeLeftInMin % 60;
-                this.timeLeft = `${hours} H ${minutes} M`;
+                this.timeLeft = this.timeLeftInMin == 0 ? '0 H 0 M' : `${hours} H ${minutes} M`;
                 this.showWarning = true;
             }
             else{
@@ -172,8 +180,8 @@ export default class Navbar extends LightningElement {
                 const email = await getCookies('email');
                 let user = await getUsers({email:email});
                 let userDetail = {
-                    'User Name': user?.Name,
-                    'Email': user?.Email__c,
+                    'User Name': user?.Custom_user?.Name,
+                    'Email': user?.Custom_user?.Email__c,
                     'Punch In Time': this.punchInTime ? this.punchInTime : 'Not Punched In',
                     'Punch Out Time': punchOutTime ? punchOutTime : 'Not Punched Out',
                     'Time Left': this.timeLeft ? this.timeLeft : '0 H 0 M',

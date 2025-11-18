@@ -1,5 +1,6 @@
 import { publish } from 'lightning/messageService';
 import TOAST_MESSAGE_CHANNEL from '@salesforce/messageChannel/ToastMessage__c';
+import { getDataConnectorSourceFields } from 'lightning/analyticsWaveApi';
 
 export function showAlert(component, title, message, theme = 'info') {
     if (!component.messageContext) return;
@@ -46,7 +47,7 @@ export function removeCookies(name){
     }
 }
 
-// Convert miliseconds to HH:MM:SS format
+// Convert miliseconds to HH:MM format
 
 export function msToTime(ms){
         let totalSeconds = Math.floor(ms / 1000);
@@ -74,4 +75,31 @@ export function checkForPunchOutIs9Hour(punchInTime, punchOutTime) {
     else{
         return { status: false, timeDifference: totalMinutes };
     }
+}
+
+export function getFormattedNameAndAbbreviation(fname,lname){
+    let fullName = (fname || '') + ' ' + (lname || '');
+    fullName = fullName.trim().length > 0 ? fullName : 'Unknown' ;
+    let profileText = '';
+    let firstExist = fname && fname?.length > 0;
+    let secondExist = lname && lname?.length > 0;
+    if(firstExist && secondExist){
+        profileText = fname[0] + lname[0];
+    }
+    else if(firstExist && !secondExist){
+        profileText = fname[0] + fname[1];
+    }
+    else if(!firstExist && secondExist){
+        profileText = lname[0] + lname[1];
+    }
+    else{
+        profileText = 'NA';
+    }
+
+    profileText = profileText.toUpperCase();
+
+    return {
+        fullName,
+        profileText
+    };
 }

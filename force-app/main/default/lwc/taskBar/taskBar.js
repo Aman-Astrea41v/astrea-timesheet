@@ -26,6 +26,8 @@ export default class taskBar extends LightningElement {
     isLoading = false;
     showOtherCategoryText = false;
     isToday = false;
+    isNotTomorrow = false;
+    workingHours;
 
     @track tasks = [];
 
@@ -33,7 +35,7 @@ export default class taskBar extends LightningElement {
     category: 'Salesforce Admin' ,otherCategory: '' };
     showTaskForm = false;
 
-    @track statusPanel = { class: 'status-panel status-pending', indicator: 'Waiting', text: 'Not Started',workType:'Please punch in to begin',punchTime: '' ,dailyTotal: '0 H 0 M' };
+    @track statusPanel = { class: 'status-panel', indicator: '', text: '',workType:'',punchTime: '' ,dailyTotal: '' };
 
     @wire(MessageContext)
         messageContext;
@@ -66,22 +68,55 @@ export default class taskBar extends LightningElement {
             }
             const reportData = await getUserPunchStatus({userId:uid,specificDate:specificDate});
 
-            if(reportData.punchedIn == 'true' && reportData.punchedOut == 'false'){
-                this.isPunchedIn = true;
-                this.punchInTime = reportData?.punchInTime.split('.')[0]
+            this.punchInTime = reportData?.punchInTime.split('.')[0]
 
+            if(reportData.punchedIn == 'true' && reportData.punchedOut == 'false'){
+
+                this.isPunchedIn = true;
+
+                let [h, m] = this.punchInTime.replace('Z','').split(':').map(Number);
+
+                let systemTime = new Date().toLocaleTimeString('en-GB', { 
+                    timeZone: 'Asia/Kolkata',
+                    hour12: false
+                });
+
+                let [ch, cm] = systemTime.split(':').map(Number);
+
+                let punchInMinutes = h * 60 + m;
+                let currentMinutes = ch * 60 + cm;
+
+                let diffMins = Math.floor(currentMinutes - punchInMinutes);
+
+                this.workingHours = diffMins <= 0 
+                    ? "0 H 0 M" 
+                    : `${Math.floor(diffMins / 60)} H ${diffMins % 60} M`;
+
+                
                 this.statusPanel = { class: 'status-panel status-active', indicator: 'Active', text: 'Currently Working',workType:reportData.workMode,punchTime:'Started : ' + this.punchInTime.split(':')[0] + " : " + this.punchInTime.split(':')[1], dailyTotal: dailyTotal
                 }
             }
             else if(reportData.punchedIn == 'false' && reportData.punchedOut == 'false'){
+                this.workingHours = this.formatDuration(0);
+
                 this.isPunchedIn = false;
-                this.statusPanel = { class: 'status-panel status-pending', indicator: 'Waiting', text: 'Not Started',workType:'Please punch in to begin',punchTime: '' ,dailyTotal: '0 H 0 M' };
+                this.statusPanel = { class: 'status-panel status-pending', indicator: 'Inactive', text: 'Not Started',workType:'Please punch in to begin',punchTime: '' ,dailyTotal: '0 H 0 M' };
             }
             else{
                 this.isPunchedIn = false;
                 this.punchOutTime = reportData?.punchOutTime.split('.')[0];
                 this.statusPanel = { class: 'status-panel status-inactive', indicator: 'Completed', text: 'Day Completed',workType:reportData.workMode,punchTime:'Ended : ' + this.punchOutTime.split(":")[0] +  " : " + this.punchOutTime.split(":")[1], dailyTotal: dailyTotal
                 }
+
+                let [sh, sm] = this.punchInTime.split(":").map(Number);
+                let [eh, em] = this.punchOutTime.split(":").map(Number);
+
+                let startMins = sh * 60 + sm;
+                let endMins = eh * 60 + em;
+
+                let workingMinutes = Math.floor(endMins - startMins);
+
+                this.workingHours = this.formatDuration(workingMinutes);
             }
             this.isLoading = false;
         }
@@ -145,6 +180,20 @@ export default class taskBar extends LightningElement {
                     minute: '2-digit'
                 }),
             }
+
+            let [sh, sm, ss] = this.punchInTime.split(":").map(Number);
+            let [eh, em, es] = this.punchOutTime.split(":").map(Number);
+
+            // Convert both times to total minutes
+            let startMins = sh * 60 + sm + ss / 60;
+            let endMins = eh * 60 + em + es / 60;
+
+            let workingMinutes = Math.floor(endMins - startMins);
+
+            if(workingMinutes < 0 || !workingMinutes){
+                workingMinutes = 0;
+            }
+            this.workingHours = this.formatDuration(workingMinutes);
         }
     }
 
@@ -162,7 +211,21 @@ export default class taskBar extends LightningElement {
             let today = new Date().toISOString().split('T')[0]; 
             this.selectedDate = today;
             this.isToday = this.selectedDate == this.today;
+            this.isNotTomorrow = this.selectedDate == this.today;
             this.template.querySelector('.filter-date-task').value = today;
+
+            let dailyTotal = await getDailyTotal({userId:uid,specificDate:today});   
+           
+            if(dailyTotal == null){
+                dailyTotal = this.formatDuration(0);
+            }
+            else{
+                dailyTotal = this.formatDuration(dailyTotal);
+            }
+            // Update Status of Daily Total
+            this.statusPanel.dailyTotal = dailyTotal;
+
+
             const tasks = await getAllTasks({userId: uid, specificDate: today});
             this.tasks = [];
             if(tasks.length > 0){
@@ -176,7 +239,7 @@ export default class taskBar extends LightningElement {
                         formattedDuration: this.formatDuration(task.Duration__c),
                         description: task.Description__c,
                         category: task.Category__c,
-                        formatDescription: task.description ? (task.description.length > 40 ? task.description.substring(0, 40) + '...' : task.description) : '',
+                        formatDescription: task.Description__c ? (task.Description__c.length > 40 ? task.Description__c.substring(0, 40) + '...' : task.Description__c) : '',
                         formatTitle: task.Name ? (task.Name.length > 15 ? task.Name.substring(0, 15) + '...' : task.Name) : ''
                     })
                 })
@@ -197,7 +260,8 @@ export default class taskBar extends LightningElement {
             const uid = await getCookies('uid');
             if(this.selectedDate != event.target.value){
                 this.selectedDate = event.target.value == null ? this.selectedDate : event.target.value;
-                this.isToday = this.selectedDate == this.today;      
+                this.isToday = this.selectedDate == this.today;
+                this.isNotTomorrow = this.selectedDate == this.today;
                 const tasks = await getAllTasks({userId: uid, specificDate: this.selectedDate});
                 this.tasks = [];
                 if(tasks.length > 0){
@@ -211,7 +275,7 @@ export default class taskBar extends LightningElement {
                             formattedDuration: this.formatDuration(task.Duration__c),
                             description: task.Description__c,
                             category: task.Category__c,
-                            formatDescription: task.description ? (task.description.length > 40 ? task.description.substring(0, 40) + '...' : task.description) : '',
+                            formatDescription: task.Description__c ? (task.Description__c.length > 40 ? task.Description__c.substring(0, 40) + '...' : task.Description__c) : '',
                             formatTitle: task.Name ? (task.Name.length > 15 ? task.Name.substring(0, 15) + '...' : task.Name) : ''
                         })
                     })
@@ -232,12 +296,42 @@ export default class taskBar extends LightningElement {
         }
     }
 
+    // Date
+    increaseDate() {
+        let date = new Date(this.selectedDate);
+        date.setDate(date.getDate() + 1);
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        const year = date.getFullYear();
+
+        let newDate = `${year}-${month}-${day}`;
+        this.selectedDate = null;
+        this.filterTaskByDate({ target: { value: newDate } });
+        let input_date = this.template.querySelector('.filter-date-task');
+        input_date.value = newDate;
+    }
+
+
+    decreaseDate(){
+        let date = new Date(this.selectedDate);
+        date.setDate(date.getDate() - 1);
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        const year = date.getFullYear();
+
+        let newDate = `${year}-${month}-${day}`;
+        this.selectedDate = null;
+        this.filterTaskByDate({ target: { value: newDate } });
+        let input_date = this.template.querySelector('.filter-date-task');
+        input_date.value = newDate;
+    }
+
     get modalTitle() {
         return this.isEdit ? 'Edit Task' : 'New Task';
     }
 
     get allowSaveTask(){
-        return !this.newTask.title || (!this.Modalhours > 0 && !this.Modalminutes > 0);
+        return (!this.newTask.title || this.newTask.startTime == '--:--' || this.newTask.endTime == '--:--') || (!this.Modalhours > 0 && !this.Modalminutes > 0);
     }
 
     editTask(event){
@@ -296,22 +390,14 @@ export default class taskBar extends LightningElement {
             this.Modalminutes = parseInt(event.target.value) || 0;
         }
 
-        // Split startTime
-        let [h, m, s] = this.newTask.startTime.split(':').map(Number);
+        if(this.newTask.startTime != '--:--'){
+            let [hh, mm] = this.newTask.startTime.split(':');
+            let startTimeInMS = (hh * 60 * 60 * 1000) + (mm * 60 * 1000);
+            let DurationInMS = (this.Modalhours * 60 * 60 * 1000) + (this.Modalminutes * 60 * 1000);
 
-        // Add selected hours and minutes
-        let updatedHour = h + this.Modalhours;
-        let updatedMin = m + this.Modalminutes;
-
-        // Handle minute overflow
-        if (updatedMin >= 60) {
-            updatedHour += Math.floor(updatedMin / 60);
-            updatedMin = updatedMin % 60;
+            let totalTimeInMS = startTimeInMS + DurationInMS;
+            this.newTask.endTime = msToTime(totalTimeInMS);
         }
-
-        // Optionally handle hour overflow if you want 24h format
-        updatedHour = updatedHour % 24;
-
     }
 
     // Open modal
@@ -323,6 +409,9 @@ export default class taskBar extends LightningElement {
 
     // Close modal
     closeTaskForm() {
+        this.Modalhours = 0;
+        this.Modalminutes = 0;
+        this.newTask = { title: '', duration: 0,startTime:'--:--',endTime:'--:--', description: '', category: 'Salesforce Admin', otherCategory: '' };
         this.showTaskForm = false;
     }
 
@@ -347,6 +436,12 @@ export default class taskBar extends LightningElement {
 
     updateStartTime(event){
         this.newTask.startTime = event.target.value;
+        let [hh, mm] = this.newTask.startTime.split(':');
+        let startTimeInMS = (hh * 60 * 60 * 1000) + (mm * 60 * 1000);
+        let DurationInMS = (this.Modalhours * 60 * 60 * 1000) + (this.Modalminutes * 60 * 1000);
+
+        let totalTimeInMS = startTimeInMS + DurationInMS;
+        this.newTask.endTime = msToTime(totalTimeInMS);
     }
 
     updateEndTime(event){
@@ -440,8 +535,6 @@ export default class taskBar extends LightningElement {
             }
             await this.updateTask();
             this.closeTaskForm();
-            this.Modalhours = 0;
-            this.Modalminutes = 0;
             this.showOtherCategoryText = false;
             this.isLoading = false;
         }

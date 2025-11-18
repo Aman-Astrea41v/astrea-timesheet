@@ -7,10 +7,12 @@
 
                         <div class="task-filter-panel">
                             <input type="date" class="filter-date-task" onchange={filterTaskByDate} max={today}>
+                            <lightning-button-icon class="btn" icon-name="utility:left" onclick={decreaseDate}></lightning-button-icon>
                             <button class="btn btn-info" onclick={getTodaysTask} disabled={isToday}>Today</button>
-                        </div>
+                            <lightning-button-icon icon-name="utility:right" class="btn" onclick={increaseDate} disabled={isNotTomorrow}></lightning-button-icon>
+                        </div>  
 
-                        <button class="btn btn-success" id="addTaskBtn" onclick={openTaskForm} disabled={disableTaskButton}>
+                        <button class="btn btn-success" onclick={openTaskForm} disabled={disableTaskButton}>
                             {taskButtonTitle}
                         </button>
                     </div>
@@ -25,7 +27,7 @@
                         </div>
 
 
-                        <table class="data-table">
+                        <table class="data-table" if:false={isLoading}>
                         
                             <thead>
                                 <tr>
@@ -96,14 +98,14 @@
                     </div>
                 </div>
 
-                <div class={statusPanel.class} id="statusPanel">
+                <div class={statusPanel.class} id="statusPanel" if:false={isLoading}>
                     <div class="status-indicator">{statusPanel.indicator}</div>
                     <div class="status-text" id="statusText">{statusPanel.text}</div>
                     <div class="status-detail" id="statusDetail">{statusPanel.workType}</div>
                     <div class="status-time" id="statusTime">{statusPanel.punchTime}</div>
                     <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #dee2e6;">
-                        <div class="text-muted" style="font-size: 0.875rem;">Daily Total</div>
-                        <div class="font-weight-bold" style="color: #2c5aa0;" id="dailyTotal">{statusPanel.dailyTotal}</div>
+                        <div class="text-muted" style="font-size: 0.875rem;">Working Hours</div>
+                        <div class="font-weight-bold" style="color: #2c5aa0;" id="dailyTotal">{workingHours}</div>
                     </div>
                 </div>
 

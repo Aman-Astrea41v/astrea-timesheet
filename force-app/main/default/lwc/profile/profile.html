@@ -9,21 +9,21 @@
             </lightning-spinner>
         </div>
 
-            <div class="profile-container">
+            <div class="profile-container" if:false={isLoading}>
                 <div class="profile-card">
                     <div class="profile-header">
                         <div class="profile-avatar">{user.abbreviation}</div>
-                        <div class="profile-name">{user.fname} {user.lname}</div>
+                        <div class="profile-name">{user.fullname}</div>
                         <div class="profile-role">Software Developer</div>
                     </div>
                     <form class="profile-form">
                         <div class="form-group">
                             <label class="form-label">First Name</label>
-                            <input type="text" class="form-control" value={user.fname} readonly={cannotEdit} onchange={updateField} data-field="fname"> 
+                            <input type="text" class="form-control" value={user.fname} readonly onchange={updateField} data-field="fname"> 
                         </div>
                         <div class="form-group">
                             <label class="form-label">Last Name</label>
-                            <input type="text" class="form-control" value={user.lname} readonly={cannotEdit} onchange={updateField} data-field="lname">
+                            <input type="text" class="form-control" value={user.lname} readonly onchange={updateField} data-field="lname">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Username</label>
@@ -31,7 +31,7 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">Email Address</label>
-                            <input type="email" class="form-control" value={user.email} readonly={cannotEdit} onchange={updateField} data-field="email">
+                            <input type="email" class="form-control" value={user.email} readonly onchange={updateField} data-field="email">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Phone Number</label>
@@ -87,6 +87,7 @@
                     </form>
                     <div class="btn-container">
                         <button class="btn btn-primary" onclick={updateProfile}>{editButtonText}</button>
+                        <button if:false={cannotEdit} class="btn btn-primary" onclick={cancelEdit}>Cancel</button>
                     </div>
                 </div>
             </div>

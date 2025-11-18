@@ -1,9 +1,25 @@
 public without sharing class Users {
+    
+    public class UserWrapper{
+        @AuraEnabled
+        public User__c Custom_user;
+
+        @AuraEnabled
+        public String StateCode;
+
+        @AuraEnabled
+        public String CountryCode;
+    }
+    
     @AuraEnabled
-    public static User__c getUsers(String email){
+    public static UserWrapper getUsers(String email){
         try{
             User__c user1 = [SELECT Id,UserId__c,First_Name__c,Last_Name__c, Name, Email__c,Password__c,Address__c,College_Name__c,Phone__c  FROM User__c WHERE Email__c = :email LIMIT 1];
-            return user1;
+            UserWrapper userData = new UserWrapper();
+            userData.Custom_user = user1;
+            userData.StateCode = user1?.Address__c != null ? user1.Address__c.getStateCode() : 'UP' ;
+            userData.CountryCode = user1?.Address__c != null ? user1.Address__c.getCountryCode() : 'IN';
+            return userData;
         }
         catch(Exception err){
             System.debug(err);
@@ -41,8 +57,6 @@ public without sharing class Users {
     @AuraEnabled
     public static Boolean updateUserProfile(
         String userId,
-        String firstName,
-        String lastName,
         Map<String,String> address,
         String collegeName,
         String phone,
@@ -51,15 +65,12 @@ public without sharing class Users {
     ) {
         try {
             User__c user = [
-                SELECT Id, UserId__c, First_Name__c, Last_Name__c, Name, Email__c,
-                    Password__c, Address__c, College_Name__c, Phone__c
+                SELECT Id, UserId__c, Name, Address__c, College_Name__c, Phone__c
                 FROM User__c
                 WHERE Email__c = :email
                 LIMIT 1
             ];
 
-            user.First_Name__c = firstName;
-            user.Last_Name__c = lastName;
             user.Address__Street__s  = address.get('street');
             user.Address__City__s = address.get('city');
             user.Address__CountryCode__s = address.get('country');
@@ -67,7 +78,6 @@ public without sharing class Users {
             user.College_Name__c = collegeName;
             user.Phone__c = phone;
             user.Name = username;
-            user.Email__c = email;
 
             update user;
         } catch (Exception e) {

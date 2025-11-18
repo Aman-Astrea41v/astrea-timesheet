@@ -1,9 +1,38 @@
 To do:
-1. Store Daily Total and get from Report and Show After each task added or deleted update it.
-2. From and To is to be editable manually by the user and create their fields so user can select it.
-3. In Status Panel's Daily Total show punch in and punch out difference and In task bar's Daily Total show all task total duration.
+1. Punch In button is disabled for some users.
+2. At the start of the timesheet, “Waiting” should be replaced with “Inactive.”
+3. Right and left arrows for changing dates are missing. -> Done
 
+Pending
+4. State/Country dropdown opens only when clicking on the field, not on the icon. 
+-> Ask: What it means?
 
+Report
+5. Multiple filters are not working simultaneously in the Reports section. 
+-> Ask: What they want to work multiple filter at same time.
+
+Miscellenious
+6. When entering the app URL, it does not ask for a username/password and logs in directly.
+-> Ask: What it means?
+
+Profile
+7. Error occurs when trying to update the state, even after selecting a picklist value.
+-> Disable the field : State and Country
+
+Task Bar
+8. After punching out, users cannot fill the timesheet. It currently asks to email the admin.
+9. After punching out, clicking on the timesheet first shows “Waiting” and then “Completed.” -> Done
+10. Duration (From–To) selection does not auto-populate the Hours and Minutes fields. -> Done
+11. Users can select a time range from today to the next day, which may not be valid. 
+-> Ask: What it means?
+12. When selecting a past date, today’s tasks still display instead of tasks for the selected date.
+-> Ask: It is working Well.
+13. Total hours are not being calculated correctly.
+-> Ask: It is working Well.
+14. “Time Left” value is incorrect.
+-> Ask: It is working Well.
+15. Working hours are also calculated incorrectly.
+-> Ask: It is working Well.
 
 Feature: 
 1. Create daily task report like - For daily task : you can upload screenshots,Desc,Question.
@@ -14,5 +43,24 @@ Feature:
 5. If punch out time is before 9 hours completed then show warning : You haven't completed your 9 hours yet and if user still click on punch out then punch it out otherwise do not punch out.
 
 
-Problems :
-No Problem
+Suggestions:
+1. Since country/state data loads slowly from the API, we can hardcode only India and its states for faster performance.
+-> Ask: Only state should hardcode remove Country Dropdown.
+
+2. Provide users access to fill the timesheet directly after punch-out instead of emailing the admin.
+-> Ask: User cannot add task but edit and delete the existing one.If you want i can give permission to add task also.
+
+3. Convert the City field into a dropdown similar to Country and State.
+-> Ask: Only in Up there are 416 cities so by making city field a dropdown we need to create a very big json file containing state and their city.
+
+4. Add a new column for Pin Code.
+-> Ask: Remove the country input and add pin code input.
+
+5. During profile edit, fields like Name, Email, etc., should be non-editable. -> Done
+
+6. In the edit popup, include both “Cancel” and “Update” buttons for better UX. -> Done
+
+7. Hours and Minutes fields should be auto-calculated and non-editable. -> Done
+
+8. Be mindful that the ‘Forgot Password’ feature may fail if the daily email limit (15 emails) of the developer org is exceeded. 
+-> Ask: 1000 limit per day.But if want then i can use an external system to send Email.

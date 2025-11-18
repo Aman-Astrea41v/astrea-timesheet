@@ -54,12 +54,12 @@ export default class Login extends LightningElement {
                 return;
             }
             else{
-                if(user.Password__c != this.password){
+                if(user.Custom_user.Password__c != this.password){
                     showAlert(this,'Error','Incorrect password','error');
                 }
                 else{
                     await setCookies('email',this.email);
-                    await setCookies('uid',user.Id);
+                    await setCookies('uid',user.Custom_user.Id);
                     showAlert(this,'Success','Login successful','success');
                     let event = new CustomEvent('navigate', {detail: 'home'});
                     this.dispatchEvent(event);
