@@ -73,7 +73,7 @@ public without sharing class Users {
 
             user.Address__Street__s  = address.get('street');
             user.Address__City__s = address.get('city');
-            user.Address__CountryCode__s = address.get('country');
+            user.Address__PostalCode__s = address.get('postalCode');
             user.Address__StateCode__s = address.get('state');
             user.College_Name__c = collegeName;
             user.Phone__c = phone;

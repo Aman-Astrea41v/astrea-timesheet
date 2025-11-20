@@ -1,19 +1,31 @@
 public without sharing class Reports {
 
+    // Filtering Methods
+
     @AuraEnabled
-    public static List<Report__c> getReportByStatus(String userId,String status){
+    public static List<Report__c> filterReports(String userId,String status,String workMode){
         try {
-            return [
-                SELECT Id, Punch_In__c, Punch_Out__c, Date__c, Work_Mode__c ,Status__c
-                FROM Report__c 
-                WHERE UserId__c =:userId AND Status__c = :status
-                ORDER BY Date__c ASC
-                LIMIT 5
-            ];
+            String query = 'SELECT Id, Punch_In__c, Punch_Out__c, Date__c, Work_Mode__c ,Status__c FROM Report__c WHERE UserId__c = '+ '\'' + userId + '\'';
+            if(workMode == 'All' && status == 'All'){
+                query += ' Order BY Date__c DESC LIMIT 5';
+            }
+            else if(workMode == 'All' && status != 'All'){
+                query += ' AND Status__c = '+ '\'' +status + '\'' +' Order BY Date__c DESC LIMIT 5';
+            }
+            else if(workMode != 'All' && status == 'All'){
+                query += ' AND Work_Mode__c = ' + '\'' + workMode + '\'' + ' Order BY Date__c DESC LIMIT 5';
+            }
+            else{
+                query += ' AND Work_Mode__c = ' + '\'' + workMode + '\'' + 'AND Status__c = '+ '\'' +status + '\'' + ' Order BY Date__c DESC LIMIT 5';
+            }
+            
+            return Database.query(query);
+            
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
     }
+
 
     @AuraEnabled
     public static Decimal getDailyTotal(String userId,String specificDate){
@@ -30,29 +42,15 @@ public without sharing class Reports {
             throw new AuraHandledException(e.getMessage());
         }
     }
-
-    @AuraEnabled
-    public static List<Report__c> getReportByWorkMode(String userId,String workMode){
-        try {
-            return [
-                SELECT Id, Punch_In__c, Punch_Out__c, Date__c, Work_Mode__c ,Status__c
-                FROM Report__c 
-                WHERE UserId__c =:userId AND Work_Mode__c = :workMode
-                ORDER BY Date__c ASC
-                LIMIT 5
-            ];
-        } catch (Exception e) {
-            throw new AuraHandledException(e.getMessage());
-        }
-    }
     
     @AuraEnabled
     public static List<Report__c> getReportForThisWeek(String userId){
         try {
             return [
-                SELECT Id, Punch_In__c, Punch_Out__c, Date__c, Work_Mode__c ,Status__c
+                SELECT Id, Punch_In__c, Punch_Out__c, Date__c, Work_Mode__c, Status__c
                 FROM Report__c 
-                WHERE UserId__c =:userId AND Date__c >= THIS_WEEK 
+                WHERE UserId__c = :userId
+                AND Date__c = THIS_WEEK
                 ORDER BY Date__c ASC
                 LIMIT 5
             ];
@@ -60,14 +58,16 @@ public without sharing class Reports {
             throw new AuraHandledException(e.getMessage());
         }
     }
+
 
     @AuraEnabled
     public static List<Report__c> getReportForLastWeek(String userId){
         try {
             return [
-                SELECT Id, Punch_In__c, Punch_Out__c, Date__c, Work_Mode__c ,Status__c
-                FROM Report__c 
-                WHERE UserId__c =:userId AND Date__c >= LAST_N_DAYS:7 
+                SELECT Id, Punch_In__c, Punch_Out__c, Date__c, Work_Mode__c, Status__c
+                FROM Report__c
+                WHERE UserId__c = :userId
+                AND Date__c = LAST_WEEK
                 ORDER BY Date__c ASC
                 LIMIT 5
             ];
@@ -76,6 +76,7 @@ public without sharing class Reports {
         }
     }
 
+    // Punch in Related Methods
 
     @AuraEnabled
     public static Boolean punchInUserApex(String punchInTime,String userId,String specificDate,String workMode){

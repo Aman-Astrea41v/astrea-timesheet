@@ -1,6 +1,5 @@
 import { publish } from 'lightning/messageService';
 import TOAST_MESSAGE_CHANNEL from '@salesforce/messageChannel/ToastMessage__c';
-import { getDataConnectorSourceFields } from 'lightning/analyticsWaveApi';
 
 export function showAlert(component, title, message, theme = 'info') {
     if (!component.messageContext) return;

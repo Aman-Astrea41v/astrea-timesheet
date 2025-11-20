@@ -1,45 +1,6 @@
 public without sharing class ExternalAPICalls {
 
-    @AuraEnabled(cacheable=true)
-    public static Map<String, String> getAllCountries() {
-        Map<String, String> countryMap = new Map<String, String>();
-
-        try {
-            String url = 'https://countriesnow.space/api/v0.1/countries/positions';
-            
-            Http http = new Http();
-            HttpRequest req = new HttpRequest();
-            req.setEndpoint(url);
-            req.setMethod('GET');
-            
-            HttpResponse res = http.send(req);
-            
-            if(res.getStatusCode() == 200){
-                // Deserialize the root JSON object
-                Map<String, Object> root = (Map<String, Object>) JSON.deserializeUntyped(res.getBody());
-
-                // The countries list is inside "data"
-                List<Object> countries = (List<Object>) root.get('data');
-
-                for(Object cObj : countries){
-                    Map<String, Object> country = (Map<String, Object>) cObj;
-                    String name = (String) country.get('name');
-                    String iso2 = (String) country.get('iso2');
-                    
-                    if(name != null && iso2 != null){
-                        countryMap.put(name, iso2);
-                    }
-                }
-            }
-        } catch(Exception e){
-            System.debug('Error fetching countries: ' + e.getMessage());
-        }
-
-        return countryMap;
-    }
-
-
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<Map<String, String>> getStatesByCountry(String countryName) {
         List<Map<String, String>> statesList = new List<Map<String, String>>();
         
@@ -77,5 +38,39 @@ public without sharing class ExternalAPICalls {
         
         return statesList;
     }
+
+
+    @AuraEnabled
+    public static List<Map<String, String>> getCityByState(String countryName, String state) {
+        List<Map<String, String>> cityList = new List<Map<String, String>>();
+        String formattedState = state.replaceAll(' ','%20');
+        String originalUrl = 'https://countriesnow.space/api/v0.1/countries/state/cities/q?state='+ formattedState + '&country='+countryName;
+    
+        try {
+            Http http = new Http();
+            HttpRequest req = new HttpRequest();
+            
+            req.setEndpoint(originalUrl);
+            req.setMethod('GET');
+            
+            HttpResponse res = http.send(req);    
+            Map<String, Object> root = (Map<String, Object>) JSON.deserializeUntyped(res.getBody());
+            List<Object> cities = (List<Object>) root.get('data');
+
+            for(Object cityObj : cities){
+                Map<String,String> city = new Map<String,String>();
+                city.put('label',(String) cityObj);
+                city.put('value',(String) cityObj);
+                
+                cityList.add(city);
+            }
+    
+        } catch (Exception e) {
+            System.debug('Error fetching cities: ' + e.getMessage());
+        }
+        
+        return cityList;
+    }
+
 
 }

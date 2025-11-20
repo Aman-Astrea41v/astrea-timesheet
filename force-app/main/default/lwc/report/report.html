@@ -14,7 +14,7 @@
             <p class="page-subtitle">View and manage your punch in/out records</p>
         </div>
 
-        <div class="today-summary show" id="todaySummary">
+        <div class="today-summary show" id="todaySummary" if:false={isLoading}>
             <h3 class="summary-title">Today's Attendance Summary</h3>
             <div class="punch-times">
                 <div class="punch-time">
@@ -32,15 +32,15 @@
         </div>
 
 
-        <div class="filters-panel">
+        <div class="filters-panel" if:false={isLoading}>
 
             <!-- Location Filter -->
             <div class="form-group">
                 <label class="form-label">Location</label>
                 <select class="slds-select" onchange={handleLocationChange}>
-                    <option value="All">All</option>
-                    <option value="Work from Office">Work from Office</option>
-                    <option value="Work from Home">Work from Home</option>
+                    <template for:each={locationOptions} for:item="option">
+                        <option key={option.value} value={option.value} selected={option.selected}>{option.label}</option>
+                    </template>
                 </select>
             </div>
 
@@ -48,9 +48,9 @@
             <div class="form-group">
                 <label class="form-label">Status</label>
                 <select class="slds-select" onchange={handleStatusChange}>
-                    <option value="All">All</option>
-                    <option value="On Time">On Time</option>
-                    <option value="Late">Late</option>
+                    <template for:each={statusOptions} for:item="option">
+                        <option key={option.value} value={option.value} selected={option.selected}>{option.label}</option>
+                    </template>
                 </select>
             </div>
 
@@ -62,7 +62,7 @@
 
         </div>
 
-        <div class="content-section">
+        <div class="content-section" if:false={isLoading}>
             <div class="section-header">
                 <h3 class="section-title">Total Report</h3>
                 <span class="total-badge">{recordsCount} Reports</span>
@@ -72,7 +72,12 @@
                 <template for:each={allReports} for:item="record">
                     <div key={record.id} class="report-card">
                         <div class="card-header">
-                            <h3>{record.day}, {record.date}</h3>
+                            <div class="header-content">
+                                <h3>{record.day}, {record.date}</h3>
+                                <template if:true={record.isToday}>
+                                    <span class="today-badge">Today</span>
+                                </template>
+                            </div>
                         </div>
                         <div class="card-body">
                             <div class="punch-row">

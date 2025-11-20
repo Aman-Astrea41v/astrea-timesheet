@@ -4,13 +4,13 @@ import { getCookies, msToTime } from 'c/utils';
 import getUserPunchStatus from '@salesforce/apex/Reports.getUserPunchStatus';
 import getReportForThisWeek from '@salesforce/apex/Reports.getReportForThisWeek';
 import getReportForLastWeek from '@salesforce/apex/Reports.getReportForLastWeek';
-import getReportByStatus from '@salesforce/apex/Reports.getReportByStatus';
-import getReportByWorkMode from '@salesforce/apex/Reports.getReportByWorkMode';
+import filterReports from '@salesforce/apex/Reports.filterReports';
 
 export default class Report extends LightningElement {
-    @track selectedDate;
     @track displayRecords = [];
     isLoading = false;
+    status = 'All';
+    workMode = 'All';
 
     @track reportStatus = { punchInTime: '--:--' , punchOutTime: '--:--', workMode: '' };
     
@@ -45,17 +45,19 @@ export default class Report extends LightningElement {
         try{
             this.isLoading = true;
             this.allReports = [];
+            let today = new Date().toDateString();
             reports.map(report => {
-                let day = new Date(report.Date__c).toLocaleDateString('en-US', { weekday: 'long' });
+                let day = new Date(report?.Date__c).toLocaleDateString('en-US', { weekday: 'long' });
                 this.allReports.push({
-                    id: report.Id,
-                    date: report.Date__c,
+                    id: report?.Id,
+                    date: report?.Date__c,
                     day: day,
-                    punchIn: report.Punch_In__c ? msToTime(report.Punch_In__c): '--:--',
-                    punchOut: report.Punch_Out__c ? msToTime(report.Punch_Out__c) : '--:--',
-                    location: report.Work_Mode__c,
-                    status: report.Status__c ? report.Status__c : '--',
-                    statusClass: report.Status__c == "Late" ? "badge status late" : "badge status ontime"
+                    punchIn: report?.Punch_In__c ? msToTime(report.Punch_In__c): '--:--',
+                    punchOut: report?.Punch_Out__c ? msToTime(report.Punch_Out__c) : '--:--',
+                    location: report?.Work_Mode__c,
+                    status: report?.Status__c ? report.Status__c : '--',
+                    statusClass: report?.Status__c == "Late" ? "badge status late" : "badge status ontime",
+                    isToday: new Date(report?.Date__c).toDateString() === today
                 })
             })
             this.isLoading = false;
@@ -66,6 +68,23 @@ export default class Report extends LightningElement {
         }
     }
 
+
+    async getFilteredReports(){
+        try{
+            this.isLoading = true;
+            const uid = await getCookies('uid');
+            
+            const reports = await filterReports({userId: uid,status: this.status,workMode: this.workMode});
+            
+            this.updateReport(reports);
+            this.isLoading = false;
+        }
+        catch(err){
+            console.log('Error from Report: ',JSON.stringify(err));
+            console.log('Error Message from Report: ',err?.message);
+            this.isLoading = false;
+        }
+    }
 
     // Filtering Methods
     async setLastWeekReport(){
@@ -103,45 +122,33 @@ export default class Report extends LightningElement {
     }
 
     async handleStatusChange(event){
-        try{
-            this.isLoading = true;
-            const uid = await getCookies('uid');
-            
-            const reports = await getReportByStatus({userId:uid,status: event.target.value});
-            
-            this.updateReport(reports);
-            this.isLoading = false;
-        }
-        catch(err){
-            console.log('Error from Report: ',JSON.stringify(err));
-            console.log('Error Message from Report: ',err?.message);
-            this.isLoading = false;
-        }
+        this.status = event.target.value;
+        this.getFilteredReports();
     }
 
     async handleLocationChange(event){
-        try{
-            this.isLoading = true;
-            const uid = await getCookies('uid');
-            
-            const reports = await getReportByWorkMode({userId:uid,workMode: event.target.value});
-            
-            this.updateReport(reports);
-            this.isLoading = false;
-        }
-        catch(err){
-            console.log('Error from Report: ',JSON.stringify(err));
-            console.log('Error Message from Report: ',err?.message);
-            this.isLoading = false;
-        }
+        this.workMode = event.target.value;
+        this.getFilteredReports();
     }
 
     get recordsCount() {
         return this.allReports.length;
     }
 
-    handleDateChange(event) {
-        this.selectedDate = event.target.value;
+    get locationOptions() {
+        return [
+            { label: 'All', value: 'All', selected: this.workMode == 'All' },
+            { label: 'Work from Office', value: 'Work from Office', selected: this.workMode == 'Work from Office' },
+            { label: 'Work from Home', value: 'Work from Home', selected: this.workMode == 'Work from Home' }
+        ];
+    }
+
+    get statusOptions() {
+        return [
+            { label: 'All', value: 'All', selected: this.status == 'All' },
+            { label: 'On Time', value: 'On Time', selected: this.status == 'On Time' },
+            { label: 'Late', value: 'Late', selected: this.status == 'Late' }
+        ];
     }
 
 }

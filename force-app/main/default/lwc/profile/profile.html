@@ -18,20 +18,24 @@
                     </div>
                     <form class="profile-form">
                         <div class="form-group">
-                            <label class="form-label">First Name</label>
-                            <input type="text" class="form-control" value={user.fname} readonly onchange={updateField} data-field="fname"> 
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Last Name</label>
-                            <input type="text" class="form-control" value={user.lname} readonly onchange={updateField} data-field="lname">
+                            <label class="form-label">User Id</label>
+                            <input type="text" class="form-control" value={user.Id} readonly data-field="Id"> 
                         </div>
                         <div class="form-group">
                             <label class="form-label">Username</label>
                             <input type="text" class="form-control" value={user.username} readonly={cannotEdit} onchange={updateField} data-field="username">
                         </div>
                         <div class="form-group">
+                            <label class="form-label">First Name</label>
+                            <input type="text" class="form-control" value={user.fname} readonly data-field="fname"> 
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" class="form-control" value={user.lname} readonly data-field="lname">
+                        </div>
+                        <div class="form-group">
                             <label class="form-label">Email Address</label>
-                            <input type="email" class="form-control" value={user.email} readonly onchange={updateField} data-field="email">
+                            <input type="email" class="form-control" value={user.email} readonly data-field="email">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Phone Number</label>
@@ -46,19 +50,35 @@
                             <input type="text" class="form-control" value={user.street} readonly={cannotEdit} onchange={updateField} data-field="street">
                         </div>
                         <div class="form-group">
+                            <label class="form-label">Pin Code</label>
+                            <input type="text" class="form-control" value={user.pinCode} readonly={cannotEdit} onchange={updateField} data-field="pinCode">
+                        </div>
+                        <div class="form-group">
                             <label class="form-label">City</label>
-                            <input type="text" class="form-control" value={user.city} readonly={cannotEdit} onchange={updateField} data-field="city">
-                        </div> 
+                            <select 
+                                class="form-select" 
+                                onchange={handleCityChange} 
+                                disabled={cannotEdit}>
+                                <template for:each={cityWithSelection} for:item="city">
+                                    <option 
+                                        key={city.value} 
+                                        value={city.value} 
+                                        selected={city.selected}>
+                                        {city.label}
+                                    </option>
+                                </template>
+                            </select>
+                        </div>
                         <div class="form-group">
                             <label class="form-label">State</label>
                             <select 
-                                class="form-control" 
+                                class="form-select" 
                                 onchange={handleStateChange} 
                                 disabled={cannotEdit}>
                                 <template for:each={statesWithSelection} for:item="state">
                                     <option 
                                         key={state.value} 
-                                        value={state.value} 
+                                        value={state.label} 
                                         selected={state.selected}>
                                         {state.label}
                                     </option>
@@ -68,15 +88,14 @@
                         <div class="form-group">
                             <label class="form-label">Country</label>
                              <select 
-                                class="form-control" 
-                                onchange={handleCountryChange} 
-                                disabled={cannotEdit}
+                                class="form-select" 
+                                disabled
                                 >
-                                <template for:each={countryWithSelection} for:item="country">
+                                <template for:each={countries} for:item="country">
                                     <option 
                                         key={country.value} 
                                         value={country.value}
-                                        selected={country.selected}
+                                        selected
                                         >
                                         {country.label}
                                     </option>

@@ -1,7 +1,7 @@
 import getUsers from '@salesforce/apex/Users.getUsers';
 import updateUserProfile from '@salesforce/apex/Users.updateUserProfile';
 // API Class Imports
-import getAllCountries from '@salesforce/apex/ExternalAPICalls.getAllCountries';
+import getCityByState from '@salesforce/apex/ExternalAPICalls.getCityByState';
 import getStatesByCountry from '@salesforce/apex/ExternalAPICalls.getStatesByCountry';
 import { getCookies, showAlert, getFormattedNameAndAbbreviation } from 'c/utils';
 import { LightningElement, track, wire } from 'lwc';
@@ -15,19 +15,13 @@ export default class Profile extends LightningElement {
     @wire(MessageContext)
     messageContext;
 
-    @track countries = [];
+    @track countries = [{ label: 'India', value:'IN' }];
     @track states = [];
-
+    @track cities = [];
 
     async connectedCallback() {
         try {
             this.isLoading = true;
-            const countries = await getAllCountries();
-            this.countries = Object.entries(countries).map(([label, value]) => ({
-                label,
-                value
-            }));
-            
             this.getUserProfile();
             
         } catch (err) {
@@ -44,6 +38,7 @@ export default class Profile extends LightningElement {
             const email = await getCookies('email');   
             const user = await getUsers({ email: email });
             let formattedName = getFormattedNameAndAbbreviation(user?.Custom_user?.First_Name__c, user?.Custom_user?.Last_Name__c);
+            this.user.Id = user?.Custom_user?.UserId__c;
             this.user.abbreviation = formattedName?.profileText;
             this.user.fullname = formattedName?.fullName;
             this.user.fname = user?.Custom_user?.First_Name__c || 'N/A';
@@ -56,8 +51,11 @@ export default class Profile extends LightningElement {
             this.user.city = user?.Custom_user?.Address__c?.city || 'N/A';
             this.user.state = user?.StateCode;
             this.user.country = user?.CountryCode;
+            this.user.pinCode = user?.Custom_user?.Address__c?.postalCode;
 
             this.states = await getStatesByCountry({ countryName: user?.Custom_user?.Address__c?.country });
+            this.cities = await getCityByState({ countryName: user?.Custom_user?.Address__c?.country, state: user?.Custom_user?.Address__c?.state });
+
         }
         catch(err){
             console.error(err);
@@ -71,24 +69,20 @@ export default class Profile extends LightningElement {
         }));
     }
 
-    handleStateChange(event) {
-        this.user.state = event.target.value;
-    }
-
-    get countryWithSelection() {
-        return this.countries.map(st => ({
-            ...st,
-            selected: st.value === this.user.country
+    get cityWithSelection() {
+        return this.cities.map(ct => ({
+            ...ct,
+            selected: ct.value === this.user.city
         }));
     }
 
-    async handleCountryChange(event) {
-        this.isLoading = true;
-        this.user.country = event.target.value;
-        let selectedCountry = this.countries.find(st => st.value === this.user.country)?.label;
-        this.states = await getStatesByCountry({ countryName: selectedCountry });
-        this.user.state = '';
-        this.isLoading = false;
+    async handleStateChange(event) {
+        this.user.state = event.target.value;
+        this.cities = await getCityByState({ countryName: this.countries[0].label, state: this.user.state });
+    }
+
+    handleCityChange(event){
+        this.user.city = event.target.value;
     }
 
     updateField(event) {
@@ -122,7 +116,7 @@ export default class Profile extends LightningElement {
                         street: this.user.street,
                         city: this.user.city,
                         state: this.user.state,
-                        country: this.user.country
+                        postalCode: this.user.pinCode
                     },
                     collegeName: this.user.collegeName,
                     phone: this.user.phone,
@@ -137,7 +131,7 @@ export default class Profile extends LightningElement {
                 this.cannotEdit = true;
             }
         } catch (err) {
-            await showAlert(this, 'Error', 'State Not Available.Ask Admin to add', 'error')
+            await showAlert(this, 'Error', 'Some Error Occured', 'error')
             console.log('Error from Profile: ', JSON.stringify(err));
             console.log('Error Message from Profile: ', err?.message);
         } finally {
