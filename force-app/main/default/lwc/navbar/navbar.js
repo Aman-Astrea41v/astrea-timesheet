@@ -176,25 +176,6 @@ export default class Navbar extends LightningElement {
             this.showWarning = false;
             this.punchedOut = false;
 
-            if(event.currentTarget.dataset.id == 'punchOutAnyway'){
-                const email = await getCookies('email');
-                let user = await getUsers({email:email});
-                let userDetail = {
-                    'User Name': user?.Custom_user?.Name,
-                    'Email': user?.Custom_user?.Email__c,
-                    'Punch In Time': this.punchInTime ? this.punchInTime : 'Not Punched In',
-                    'Punch Out Time': punchOutTime ? punchOutTime : 'Not Punched Out',
-                    'Time Left': this.timeLeft ? this.timeLeft : '0 H 0 M',
-                    'Work Mode': this.workingMode ? this.workingMode : 'Not Found'
-                }
-
-                this.showWarning = false;
-                await sendEarlyPunchOutNotification({
-                    emailAddresses: ['aman@astreait.com','amanrehman2020@gmail.com'],
-                    userData: userDetail
-                })
-            }
-
             const uid = await getCookies('uid');
             publish(this.messageContext, MY_CHANNEL, {type: 'PUNCHOUT' ,disableTask: true, time: new Date().toLocaleString(), workMode: this.workingMode});
             
@@ -213,6 +194,24 @@ export default class Navbar extends LightningElement {
             })
             if(response){
                 await showAlert(this,'Success', 'Punched Out Successfully', 'success');
+                if(event.currentTarget.dataset.id == 'punchOutAnyway'){
+                    const email = await getCookies('email');
+                    let user = await getUsers({email:email});
+                    let userDetail = {
+                        'User Name': user?.Custom_user?.Name,
+                        'Email': user?.Custom_user?.Email__c,
+                        'Punch In Time': this.punchInTime ? this.punchInTime : 'Not Punched In',
+                        'Punch Out Time': punchOutTime ? punchOutTime : 'Not Punched Out',
+                        'Time Left': this.timeLeft ? this.timeLeft : '0 H 0 M',
+                        'Work Mode': this.workingMode ? this.workingMode : 'Not Found'
+                    }
+
+                    this.showWarning = false;
+                    await sendEarlyPunchOutNotification({
+                        emailAddresses: ['aman@astreait.com','amanrehman2020@gmail.com'],
+                        userData: userDetail
+                    })
+                }
             }
             else{
                 await showAlert(this,'Error!', 'Punched Out Failed', 'error');

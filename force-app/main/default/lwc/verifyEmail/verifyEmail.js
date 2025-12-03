@@ -10,7 +10,7 @@ export default class VerifyEmail extends LightningElement {
     error='';
     isOTP = false;
     otp;
-    otpRelax = false;
+    otpRelax = true;
     otpBtnLabel = "Send Verification Code";
 
     @wire(MessageContext)
@@ -71,7 +71,7 @@ export default class VerifyEmail extends LightningElement {
         catch(err){
             console.log('Error in Sending OTP: ',JSON.stringify(err));
             console.log('Error message: ',err?.message);
-            await showAlert(this,'Error',err?.body?.message,'error');
+            await showAlert(this,'Error','Email Limit Exceeded','error');
         }
     }
 

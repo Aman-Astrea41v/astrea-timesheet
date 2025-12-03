@@ -28,6 +28,7 @@ export default class taskBar extends LightningElement {
     isToday = false;
     isNotTomorrow = false;
     workingHours;
+    limitDailyTotal = 0;
 
     @track tasks = [];
 
@@ -343,6 +344,8 @@ export default class taskBar extends LightningElement {
         })
         this.Modalhours = parseInt(this.newTask.duration / 60);
         this.Modalminutes = parseInt(this.newTask.duration % 60);
+        let formatDailyTotal = this.formatInMinutes(this.statusPanel.dailyTotal,0);
+        this.limitDailyTotal = formatDailyTotal - this.newTask.duration;
         this.isEdit = true;
     }
 
@@ -488,6 +491,12 @@ export default class taskBar extends LightningElement {
             selected: i === this.Modalminutes
         }));
     }
+
+    // Convert H:M format in Minutes
+    formatInMinutes(time,updateTime) {
+        let [hour,_,min] = time.split(' ').map(Number);
+        return ((hour * 60) + min)+ updateTime;
+    }
     
     // Save task
     async saveTask() {
@@ -497,6 +506,11 @@ export default class taskBar extends LightningElement {
             this.newTask.duration = parseInt(this.Modalhours) * 60 + parseInt(this.Modalminutes);
 
             if (this.isEdit) {
+                if((this.limitDailyTotal + this.newTask.duration) >= 720){
+                    await showAlert(this,'Error', 'You can not add more than 12 hours of task in a day', 'error');
+                    this.isLoading = false;
+                    return;
+                }
             // update existing task
                 const response = await updateTask({
                     taskId: this.newTask.id,
@@ -515,7 +529,11 @@ export default class taskBar extends LightningElement {
                     await showAlert(this,'Error', 'Error updating Task', 'error');
                 }
             } else {
-                
+                if(this.formatInMinutes(this.statusPanel.dailyTotal,this.newTask.duration) >= 720){
+                    await showAlert(this,'Error', 'You can not add more than 12 hours of task in a day', 'error');
+                    this.isLoading = false;
+                    return;
+                }
                 const response = await createTask({
                     userId: uid,
                     specificDate: new Date().toISOString().split('T')[0],

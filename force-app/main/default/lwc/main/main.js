@@ -1,7 +1,7 @@
 import { LightningElement, track, wire } from 'lwc';
 import { subscribe, unsubscribe, MessageContext } from 'lightning/messageService';
 import MY_CHANNEL from '@salesforce/messageChannel/MyChannel__c';
-import { getCookies } from 'c/utils';
+import { getCookies, setCookies, removeCookies } from 'c/utils';
 
 export default class Main extends LightningElement {
     @track width = window.innerWidth;
@@ -23,6 +23,10 @@ export default class Main extends LightningElement {
             );
         }
 
+        this.boundLogOutUser = this.logOutUser.bind(this);
+        window.addEventListener('beforeunload', this.boundLogOutUser);
+
+
         this.boundUpdateWidth = this.updateWidth.bind(this);
         window.addEventListener('resize', this.boundUpdateWidth);
 
@@ -31,11 +35,21 @@ export default class Main extends LightningElement {
 
     disconnectedCallback() {
         window.removeEventListener('resize', this.boundUpdateWidth);
+        window.removeEventListener('beforeunload', this.boundLogOutUser);
 
         if (this.subscription) {
             unsubscribe(this.subscription);
             this.subscription = null;
         }
+
+    }
+
+    logOutUser(){
+        setCookies('activeParent','login');
+        removeCookies('uid');
+        removeCookies('activeChild');
+        removeCookies('email');
+        this.currentPage = 'login';
     }
 
     isMobileDevice() {

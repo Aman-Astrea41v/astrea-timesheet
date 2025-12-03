@@ -35,6 +35,7 @@ export default class Profile extends LightningElement {
 
     async getUserProfile(){
         try{
+            this.isLoading = true;
             const email = await getCookies('email');   
             const user = await getUsers({ email: email });
             let formattedName = getFormattedNameAndAbbreviation(user?.Custom_user?.First_Name__c, user?.Custom_user?.Last_Name__c);
@@ -48,17 +49,19 @@ export default class Profile extends LightningElement {
             this.user.collegeName = user?.Custom_user?.College_Name__c || 'N/A';
             this.user.phone = user?.Custom_user?.Phone__c || 'N/A';
             this.user.street = user?.Custom_user?.Address__c?.street || 'N/A';
-            this.user.city = user?.Custom_user?.Address__c?.city || 'N/A';
-            this.user.state = user?.StateCode;
+            this.user.city = user?.Custom_user?.Address__c?.city;
+            this.user.state = user?.StateCode || 'UP';
             this.user.country = user?.CountryCode;
             this.user.pinCode = user?.Custom_user?.Address__c?.postalCode;
 
-            this.states = await getStatesByCountry({ countryName: user?.Custom_user?.Address__c?.country });
-            this.cities = await getCityByState({ countryName: user?.Custom_user?.Address__c?.country, state: user?.Custom_user?.Address__c?.state });
+            this.states = await getStatesByCountry({ countryName: 'India' });
+            this.cities = await getCityByState({ countryName: 'India', state: user?.Custom_user?.Address__c?.state || 'Uttar Pradesh' });
 
+            this.isLoading = false;
         }
         catch(err){
             console.error(err);
+            this.isLoading = false;
         }
     }
 
@@ -77,8 +80,11 @@ export default class Profile extends LightningElement {
     }
 
     async handleStateChange(event) {
+        this.isLoading = true;
         this.user.state = event.target.value;
-        this.cities = await getCityByState({ countryName: this.countries[0].label, state: this.user.state });
+        let stateLabel = event.target.options[event.target.selectedIndex].text;
+        this.cities = await getCityByState({ countryName: this.countries[0].label, state: stateLabel });
+        this.isLoading = false;
     }
 
     handleCityChange(event){
@@ -108,6 +114,14 @@ export default class Profile extends LightningElement {
             if (this.cannotEdit) {
                 this.cannotEdit = false;
             } else {
+                if(!/^[0-9]{6}$/.test(this.user.pinCode.trim())){
+                    showAlert(this, 'Error', 'Pin Code must be of exact 6 digits and not contain any alphabet', 'error');
+                    return;
+                }
+                if(!/^[0-9]{10}$/.test(this.user.phone.trim())){
+                    showAlert(this, 'Error', 'Phone must be of exact 10 digits and not contain any alphabet', 'error');
+                    return;
+                }
                 this.isLoading = true;
                 const uid = await getCookies('uid');
                 const response = await updateUserProfile({
