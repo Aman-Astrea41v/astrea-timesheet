@@ -335,18 +335,24 @@ export default class taskBar extends LightningElement {
         return (!this.newTask.title || this.newTask.startTime == '--:--' || this.newTask.endTime == '--:--') || (!this.Modalhours > 0 && !this.Modalminutes > 0);
     }
 
-    editTask(event){
-        this.showTaskForm = true;
-        this.tasks.map(task => {
-            if(task.id == event.target.dataset.id){
-                this.newTask = {...task};
-            }
-        })
-        this.Modalhours = parseInt(this.newTask.duration / 60);
-        this.Modalminutes = parseInt(this.newTask.duration % 60);
-        let formatDailyTotal = this.formatInMinutes(this.statusPanel.dailyTotal,0);
-        this.limitDailyTotal = formatDailyTotal - this.newTask.duration;
-        this.isEdit = true;
+    async editTask(event){
+        if(this.isToday){
+            this.showTaskForm = true;
+            this.tasks.map(task => {
+                if(task.id == event.target.dataset.id){
+                    this.newTask = {...task};
+                }
+            })
+            this.Modalhours = parseInt(this.newTask.duration / 60);
+            this.Modalminutes = parseInt(this.newTask.duration % 60);
+            let formatDailyTotal = this.formatInMinutes(this.statusPanel.dailyTotal,0);
+            this.limitDailyTotal = formatDailyTotal - this.newTask.duration;
+            this.isEdit = true;
+        }
+        else{
+
+            await showAlert(this,'Error', 'You can not edit task of previous day', 'error');
+        }
     }
 
     async deleteTask(event){
@@ -469,6 +475,10 @@ export default class taskBar extends LightningElement {
             label: `${i} Hours`,
             selected: i === this.Modalhours
         }));
+    }
+
+    get editIconClass(){
+        return this.isToday ? "icon edit-icon edit-btn" : "disable-icon";
     }
 
     get categoryOptions(){

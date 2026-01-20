@@ -203,6 +203,11 @@ body {
     box-shadow: 0 4px 6px -1px rgba(34, 197, 94, 0.2);
 }
 
+.disable-icon{
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
 .btn-success:disabled {
     background: #86efac;
     cursor: not-allowed;
