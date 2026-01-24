@@ -180,7 +180,7 @@ export default class Navbar extends LightningElement {
             publish(this.messageContext, MY_CHANNEL, {type: 'PUNCHOUT' ,disableTask: true, time: new Date().toLocaleString(), workMode: this.workingMode});
             
             
-            let status = checkForPunchOutIs9Hour(this.punchInTime,punchOutTime).status ? 'On Time' : 'Late';
+            let status = checkForPunchOutIs9Hour(this.punchInTime,punchOutTime).status;
             
             // Updating punchOut Time
             const response = await punchOutUserApex({

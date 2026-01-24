@@ -3,20 +3,20 @@ public without sharing class Reports {
     // Filtering Methods
 
     @AuraEnabled
-    public static List<Report__c> filterReports(String userId,String status,String workMode){
+    public static List<Punch_In_Out__c> filterReports(String userId,String status,String workMode){
         try {
-            String query = 'SELECT Id, Punch_In__c, Punch_Out__c, Date__c, Work_Mode__c ,Status__c FROM Report__c WHERE UserId__c = '+ '\'' + userId + '\'';
+            String query = 'SELECT Id, Punch_In__c, Punch_Out__c, Date__c, Work_Location__c ,On_Time__c FROM Punch_In_Out__c WHERE Employee__c  = '+ '\'' + userId + '\'';
             if(workMode == 'All' && status == 'All'){
                 query += ' Order BY Date__c DESC LIMIT 5';
             }
             else if(workMode == 'All' && status != 'All'){
-                query += ' AND Status__c = '+ '\'' +status + '\'' +' Order BY Date__c DESC LIMIT 5';
+                query += ' AND On_Time__c = '+(status == 'On Time' ? true : false) +' Order BY Date__c DESC LIMIT 5';
             }
             else if(workMode != 'All' && status == 'All'){
-                query += ' AND Work_Mode__c = ' + '\'' + workMode + '\'' + ' Order BY Date__c DESC LIMIT 5';
+                query += ' AND Work_Location__c = ' + '\'' + workMode + '\'' + ' Order BY Date__c DESC LIMIT 5';
             }
             else{
-                query += ' AND Work_Mode__c = ' + '\'' + workMode + '\'' + 'AND Status__c = '+ '\'' +status + '\'' + ' Order BY Date__c DESC LIMIT 5';
+                query += ' AND Work_Location__c = ' + '\'' + workMode + '\'' + 'AND On_Time__c = ' +(status == 'On Time' ? true : false) + ' Order BY Date__c DESC LIMIT 5';
             }
             
             return Database.query(query);
@@ -31,7 +31,7 @@ public without sharing class Reports {
     public static Decimal getDailyTotal(String userId,String specificDate){
         try {
             Date reportDate = Date.valueOf(specificDate);
-            List<Report__c> report = [SELECT Id,Daily_Total_Time__c FROM Report__c WHERE UserId__c = :userId AND Date__c = :reportDate LIMIT 1];
+            List<Punch_In_Out__c> report = [SELECT Id,Daily_Total_Time__c FROM Punch_In_Out__c WHERE Employee__c  = :userId AND Date__c = :reportDate LIMIT 1];
             if(report.isEmpty()){
                 return 0;
             }
@@ -44,12 +44,12 @@ public without sharing class Reports {
     }
     
     @AuraEnabled
-    public static List<Report__c> getReportForThisWeek(String userId){
+    public static List<Punch_In_Out__c> getReportForThisWeek(String userId){
         try {
             return [
-                SELECT Id, Punch_In__c, Punch_Out__c, Date__c, Work_Mode__c, Status__c
-                FROM Report__c 
-                WHERE UserId__c = :userId
+                SELECT Id, Punch_In__c, Punch_Out__c, Date__c, Work_Location__c,On_Time__c
+                FROM Punch_In_Out__c 
+                WHERE Employee__c  = :userId
                 AND Date__c = THIS_WEEK
                 ORDER BY Date__c ASC
                 LIMIT 5
@@ -61,12 +61,12 @@ public without sharing class Reports {
 
 
     @AuraEnabled
-    public static List<Report__c> getReportForLastWeek(String userId){
+    public static List<Punch_In_Out__c> getReportForLastWeek(String userId){
         try {
             return [
-                SELECT Id, Punch_In__c, Punch_Out__c, Date__c, Work_Mode__c, Status__c
-                FROM Report__c
-                WHERE UserId__c = :userId
+                SELECT Id, Punch_In__c, Punch_Out__c, Date__c, Work_Location__c,On_Time__c
+                FROM Punch_In_Out__c
+                WHERE Employee__c  = :userId
                 AND Date__c = LAST_WEEK
                 ORDER BY Date__c ASC
                 LIMIT 5
@@ -89,17 +89,17 @@ public without sharing class Reports {
                 Integer.valueOf(Timeparts[2]),
                 0
             );
-            List<Report__c> existingReport = [SELECT Id FROM Report__c WHERE UserId__c = :userId AND Date__c = :reportDate LIMIT 1];
+            List<Punch_In_Out__c> existingReport = [SELECT Id FROM Punch_In_Out__c WHERE Employee__c  = :userId AND Date__c = :reportDate LIMIT 1];
 
             if(!existingReport.isEmpty()){
                 return false;
             }
             else{
-                Report__c report = new Report__c();
-                report.UserId__c = userId;
+                Punch_In_Out__c report = new Punch_In_Out__c();
+                report.Employee__c  = userId;
                 report.Punch_In__c = punchInTimeReport;
                 report.Date__c = reportDate;
-                report.Work_Mode__c = workMode;
+                report.Work_Location__c = workMode;
                 insert report;
                 return true;
             }
@@ -113,7 +113,7 @@ public without sharing class Reports {
 
 
     @AuraEnabled
-    public static Boolean punchOutUserApex(String punchOutTime,String userId,String specificDate,String status){
+    public static Boolean punchOutUserApex(String punchOutTime,String userId,String specificDate,Boolean status){
         try{
             Date reportDate = Date.valueOf(specificDate);
             List<String> Timeparts = punchOutTime.split(':');
@@ -123,13 +123,13 @@ public without sharing class Reports {
                 Integer.valueOf(Timeparts[2]),
                 0
             );
-            List<Report__c> existingReport = [SELECT Id,Punch_Out__c,Status__c FROM Report__c WHERE UserId__c = :userId AND Date__c = :reportDate LIMIT 1];
+            List<Punch_In_Out__c> existingReport = [SELECT Id,Punch_Out__c,On_Time__c FROM Punch_In_Out__c WHERE Employee__c  = :userId AND Date__c = :reportDate LIMIT 1];
 
             if(existingReport.isEmpty()){
                 return false;
             }
             else{
-                existingReport[0].Status__c = status;
+                existingReport[0].On_Time__c = status;
                 existingReport[0].Punch_Out__c = punchOutTimeReport;
                 update existingReport;
                 return true;
@@ -146,7 +146,7 @@ public without sharing class Reports {
     public static Map<String,String> getUserPunchStatus(String userId,String specificDate){
         try {
             Date reportDate = Date.valueOf(specificDate);
-            List<Report__c> report = [SELECT Punch_In__c,Work_Mode__c,Punch_Out__c FROM Report__c WHERE UserId__c = :userId AND Date__c = :reportDate LIMIT 1];
+            List<Punch_In_Out__c> report = [SELECT Punch_In__c,Work_Location__c,Punch_Out__c FROM Punch_In_Out__c WHERE Employee__c  = :userId AND Date__c = :reportDate LIMIT 1];
 
             if(report.isEmpty()){
                 return new Map<String,String>
@@ -170,7 +170,7 @@ public without sharing class Reports {
                 if(report[0].Punch_In__c != null){
                     reportData.put('punchedIn', 'true');
                     reportData.put('punchInTime', String.valueOf(report[0].Punch_In__c));
-                    reportData.put('workMode', report[0].Work_Mode__c);
+                    reportData.put('workMode', report[0].Work_Location__c);
                     return reportData;
                 }
                 else{

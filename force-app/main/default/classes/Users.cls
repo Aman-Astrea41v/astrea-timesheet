@@ -2,7 +2,7 @@ public without sharing class Users {
     
     public class UserWrapper{
         @AuraEnabled
-        public User__c Custom_user;
+        public Employee__c Custom_user;
 
         @AuraEnabled
         public String StateCode;
@@ -14,7 +14,7 @@ public without sharing class Users {
     @AuraEnabled
     public static UserWrapper getUsers(String email){
         try{
-            User__c user1 = [SELECT Id,UserId__c,First_Name__c,Last_Name__c, Name, Email__c,Password__c,Address__c,College_Name__c,Phone__c  FROM User__c WHERE Email__c = :email LIMIT 1];
+            Employee__c user1 = [SELECT Id,Employee_Id__c,CollegeName__c,First_Name__c,Last_Name__c, Name, Email__c,Password__c,Address__c,Phone__c,Active__c  FROM Employee__c WHERE Email__c = :email LIMIT 1];
             UserWrapper userData = new UserWrapper();
             userData.Custom_user = user1;
             userData.StateCode = user1?.Address__c != null ? user1.Address__c.getStateCode() : 'UP' ;
@@ -30,15 +30,15 @@ public without sharing class Users {
     @AuraEnabled
     public static String createNewUser(String username, String email, String password) {
         try {
-            List<User__c> users = [
-                SELECT UserId__c 
-                FROM User__c 
+            List<Employee__c> users = [
+                SELECT Email__c 
+                FROM Employee__c 
                 WHERE Email__c = :email 
                 LIMIT 1
             ];
             
             if (users.isEmpty()) {
-                User__c newUser = new User__c(
+                Employee__c newUser = new Employee__c(
                     Name = username,
                     Email__c = email,
                     Password__c = password
@@ -64,9 +64,9 @@ public without sharing class Users {
         String username
     ) {
         try {
-            User__c user = [
-                SELECT Id, UserId__c, Name, Address__c, College_Name__c, Phone__c
-                FROM User__c
+            Employee__c user = [
+                SELECT Id, Name,CollegeName__c,Address__c, Phone__c
+                FROM Employee__c
                 WHERE Email__c = :email
                 LIMIT 1
             ];
@@ -75,7 +75,7 @@ public without sharing class Users {
             user.Address__City__s = address.get('city');
             user.Address__PostalCode__s = address.get('postalCode');
             user.Address__StateCode__s = address.get('state');
-            user.College_Name__c = collegeName;
+            user.CollegeName__c = collegeName;
             user.Phone__c = phone;
             user.Name = username;
 
@@ -90,7 +90,7 @@ public without sharing class Users {
     @AuraEnabled
     public static Boolean resetUserPassword(String email,String newPassword){
         try {
-            User__c user = [SELECT Id, Password__c FROM User__c WHERE Email__c = :email LIMIT 1];
+            Employee__c user = [SELECT Id, Password__c FROM Employee__c WHERE Email__c = :email LIMIT 1];
             if (user != null){
                 user.Password__c = newPassword;
                 update user;

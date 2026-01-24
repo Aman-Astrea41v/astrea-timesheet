@@ -56,7 +56,7 @@ public without sharing class TSNotification {
     @AuraEnabled
     public static Boolean sendOTPForResetPassword(String emailTo,String otp){
         try {
-            List<User__c> users = [SELECT Id,Name FROM USer__c WHERE Email__c =:emailTo LIMIT 1];
+            List<Employee__c> users = [SELECT Id,Name FROM Employee__c WHERE Email__c =:emailTo LIMIT 1];
 
             if(users.isEmpty()){
                 throw new AuraHandledException('No User Exist with this mail.Contact your Admin');

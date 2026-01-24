@@ -1,30 +1,29 @@
 public without sharing class Tasks {
-    
     @AuraEnabled
-    public static List<Task__c> getAllTasks(String userId,String specificDate){
+    public static List<TimeSheet__c> getAllTasks(String userId,String specificDate){
         try {
             Date taskDate = Date.valueOf(specificDate);
-            List<Task__c> tasks = [SELECT Id, Name, Duration__c,StartTime__c,EndTime__c, Description__c,Category__c FROM Task__c WHERE UserId__c = :userId AND Date__c = :taskDate ORDER BY StartTime__c ASC];
+            List<TimeSheet__c> tasks = [SELECT Id, Task__c, Duration__c,StartTime__c,EndTime__c, Comment__c,Category__c FROM TimeSheet__c WHERE Employee__c = :userId AND Date__c = :taskDate ORDER BY StartTime__c ASC];
 
             if(tasks.isEmpty()){
-                return new List<Task__c>();
+                return new List<TimeSheet__c>();
             }
             return tasks;
         } catch (Exception e) {
             System.debug('Error in getTasks: ' + e.getMessage());
-            return new List<Task__c>();
+            return new List<TimeSheet__c>();
         }
     }
 
     @AuraEnabled
     public static void updateDailyTotal(String userId,Date specificDate){
         try {
-            List<Task__c> allTasks = [SELECT Id, Duration__c FROM Task__c WHERE Date__c = :specificDate AND UserId__c = :userId];
-            Report__c report = [SELECT Id, Daily_Total_Time__c FROM Report__c WHERE UserId__c = :userId AND Date__c = :specificDate LIMIT 1];
+            List<TimeSheet__c> allTasks = [SELECT Id, Duration__c FROM TimeSheet__c WHERE Date__c = :specificDate AND Employee__c = :userId];
+            Punch_In_Out__c report = [SELECT Id, Daily_Total_Time__c FROM Punch_In_Out__c WHERE Employee__c  = :userId AND Date__c = :specificDate LIMIT 1];
 
             if(report != null){
                 report.Daily_Total_Time__c = 0;
-                for(Task__c task : allTasks){
+                for(TimeSheet__c task : allTasks){
                     report.Daily_Total_Time__c += task.Duration__c;
                 }
                 update report;
@@ -55,11 +54,11 @@ public without sharing class Tasks {
             Date taskDate = Date.valueOf(specificDate);
 
             // Inserting Task
-            Task__c task = new Task__c();
-            task.UserId__c = userId;
+            TimeSheet__c task = new TimeSheet__c();
+            task.Employee__c = userId;
             task.Date__c = taskDate;
-            task.Name = taskName;
-            task.Description__c = taskDescription;
+            task.Task__c = taskName;
+            task.Comment__c = taskDescription;
             task.Duration__c = Duration;
             task.StartTime__c = sTime;
             task.EndTime__c = eTime;
@@ -81,8 +80,8 @@ public without sharing class Tasks {
     public static Boolean updateTask(String taskId, String taskName, String taskDescription, Integer Duration, String startTime, String endTime, String category, String otherCategory) {
         try {
             // Get the task to update
-            Task__c existingTask = [SELECT Id, Name, Duration__c, StartTime__c, EndTime__c, Description__c ,UserId__c, Date__c
-                                    FROM Task__c WHERE Id = :taskId LIMIT 1];
+            TimeSheet__c existingTask = [SELECT Id, Task__c, Duration__c, StartTime__c, EndTime__c, Comment__c ,Employee__c, Date__c
+                                    FROM TimeSheet__c WHERE Id = :taskId LIMIT 1];
 
             if(existingTask != null){
                 // Parse startTime and endTime
@@ -101,8 +100,8 @@ public without sharing class Tasks {
                 );
 
                 // Update current task
-                existingTask.Name = taskName;
-                existingTask.Description__c = taskDescription;
+                existingTask.Task__c = taskName;
+                existingTask.Comment__c = taskDescription;
                 existingTask.Duration__c = Duration;
                 existingTask.StartTime__c = sTime;
                 existingTask.EndTime__c = eTime;
@@ -111,7 +110,7 @@ public without sharing class Tasks {
                 update existingTask;
 
                 // Update Daily Total in Report
-                updateDailyTotal(existingTask.UserId__c,existingTask.Date__c);
+                updateDailyTotal(existingTask.Employee__c,existingTask.Date__c);
 
                 return true;
             } else {
@@ -127,12 +126,12 @@ public without sharing class Tasks {
     @AuraEnabled
     public static Boolean deleteTask(String taskId, String userId) {
         try {
-            Report__c report = [SELECT Id,Punch_In__c FROM Report__c WHERE UserId__c = :userId AND Date__c = TODAY LIMIT 1];
+            Punch_In_Out__c report = [SELECT Id,Punch_In__c FROM Punch_In_Out__c WHERE Employee__c  = :userId AND Date__c = TODAY LIMIT 1];
 
             Time punchInTime = report.Punch_In__c;
             
-            Task__c taskToDelete = [SELECT Id, StartTime__c, EndTime__c, Duration__c, Date__c 
-                                    FROM Task__c WHERE Id = :taskId LIMIT 1];
+            TimeSheet__c taskToDelete = [SELECT Id, StartTime__c, EndTime__c, Duration__c, Date__c 
+                                    FROM TimeSheet__c WHERE Id = :taskId LIMIT 1];
 
             Date dateToUpdateDailyTotal = taskToDelete.Date__c;
 
@@ -152,6 +151,5 @@ public without sharing class Tasks {
             return false;
         }
     }
-
 
 }

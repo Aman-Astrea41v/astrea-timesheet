@@ -43,7 +43,19 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">College Name</label>
-                            <input type="text" class="form-control" value={user.collegeName} readonly={cannotEdit} onchange={updateField} data-field="collegeName">
+                            <select 
+                                class="form-select" 
+                                onchange={updateField} 
+                                disabled={cannotEdit} data-field="collegeName">
+                                <template for:each={collegeWithSelection} for:item="college">
+                                    <option 
+                                        key={college.value} 
+                                        value={college.value} 
+                                        selected={college.selected}>
+                                        {college.label}
+                                    </option>
+                                </template>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Street Address</label>

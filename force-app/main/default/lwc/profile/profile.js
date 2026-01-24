@@ -19,6 +19,12 @@ export default class Profile extends LightningElement {
     @track states = [];
     @track cities = [];
 
+    collegeOptions = [
+        { label:'AIT', value:'AIT'},
+        { label:'GBU', value:'GBU'},
+        { label:'GLA', value:'GLA'}
+    ]
+
     async connectedCallback() {
         try {
             this.isLoading = true;
@@ -39,14 +45,14 @@ export default class Profile extends LightningElement {
             const email = await getCookies('email');   
             const user = await getUsers({ email: email });
             let formattedName = getFormattedNameAndAbbreviation(user?.Custom_user?.First_Name__c, user?.Custom_user?.Last_Name__c);
-            this.user.Id = user?.Custom_user?.UserId__c;
+            this.user.Id = user?.Custom_user?.Employee_Id__c;
             this.user.abbreviation = formattedName?.profileText;
             this.user.fullname = formattedName?.fullName;
             this.user.fname = user?.Custom_user?.First_Name__c || 'N/A';
             this.user.lname = user?.Custom_user?.Last_Name__c || 'N/A';
             this.user.email = user?.Custom_user?.Email__c || 'N/A';
             this.user.username = user?.Custom_user?.Name || 'N/A';
-            this.user.collegeName = user?.Custom_user?.College_Name__c || 'N/A';
+            this.user.collegeName = user?.Custom_user?.CollegeName__c || 'N/A';
             this.user.phone = user?.Custom_user?.Phone__c || 'N/A';
             this.user.street = user?.Custom_user?.Address__c?.street || 'N/A';
             this.user.city = user?.Custom_user?.Address__c?.city;
@@ -63,6 +69,13 @@ export default class Profile extends LightningElement {
             console.error(err);
             this.isLoading = false;
         }
+    }
+
+    get collegeWithSelection(){
+        return this.collegeOptions.map(clg => ({
+            ...clg,
+            selected: clg.value === this.user.collegeName
+        }));
     }
 
     get statesWithSelection() {
@@ -153,3 +166,5 @@ export default class Profile extends LightningElement {
         }
     }
 }
+
+

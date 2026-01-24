@@ -54,9 +54,9 @@ export default class Report extends LightningElement {
                     day: day,
                     punchIn: report?.Punch_In__c ? msToTime(report.Punch_In__c): '--:--',
                     punchOut: report?.Punch_Out__c ? msToTime(report.Punch_Out__c) : '--:--',
-                    location: report?.Work_Mode__c,
-                    status: report?.Status__c ? report.Status__c : '--',
-                    statusClass: report?.Status__c == "Late" ? "badge status late" : "badge status ontime",
+                    location: report?.Work_Location__c,
+                    status: report?.On_Time__c ? "On Time" : 'Late',
+                    statusClass: !report?.On_Time__c ? "badge status late" : "badge status ontime",
                     isToday: new Date(report?.Date__c).toDateString() === today
                 })
             })
@@ -75,7 +75,6 @@ export default class Report extends LightningElement {
             const uid = await getCookies('uid');
             
             const reports = await filterReports({userId: uid,status: this.status,workMode: this.workMode});
-            
             this.updateReport(reports);
             this.isLoading = false;
         }
@@ -93,7 +92,11 @@ export default class Report extends LightningElement {
             const uid = await getCookies('uid');
             
             const reports = await getReportForLastWeek({userId: uid});
-            
+
+            // resetting the filter options to All
+            this.status = 'All';
+            this.workMode = 'All';
+
             this.updateReport(reports);
             this.isLoading = false;
         }
@@ -110,7 +113,11 @@ export default class Report extends LightningElement {
             const uid = await getCookies('uid');
             
             const reports = await getReportForThisWeek({userId: uid});
-            
+
+            // resetting the filter options to All
+            this.status = 'All';
+            this.workMode = 'All';
+
             this.updateReport(reports);
             this.isLoading = false;
         }
@@ -138,8 +145,8 @@ export default class Report extends LightningElement {
     get locationOptions() {
         return [
             { label: 'All', value: 'All', selected: this.workMode == 'All' },
-            { label: 'Work from Office', value: 'Work from Office', selected: this.workMode == 'Work from Office' },
-            { label: 'Work from Home', value: 'Work from Home', selected: this.workMode == 'Work from Home' }
+            { label: 'Work from Office', value: 'Office', selected: this.workMode == 'Office' },
+            { label: 'Work from Home', value: 'Home', selected: this.workMode == 'Home' }
         ];
     }
 

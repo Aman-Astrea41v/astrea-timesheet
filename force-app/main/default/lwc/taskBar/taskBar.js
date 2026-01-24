@@ -233,15 +233,15 @@ export default class taskBar extends LightningElement {
                 tasks.map((task) => {
                     this.tasks.push({
                         id: task.Id,
-                        title: task.Name,
+                        title: task.Task__c,
                         duration: task.Duration__c,
                         startTime: msToTime(task.StartTime__c),
                         endTime: msToTime(task.EndTime__c),
                         formattedDuration: this.formatDuration(task.Duration__c),
-                        description: task.Description__c,
+                        description: task.Comment__c,
                         category: task.Category__c,
-                        formatDescription: task.Description__c ? (task.Description__c.length > 40 ? task.Description__c.substring(0, 40) + '...' : task.Description__c) : '',
-                        formatTitle: task.Name ? (task.Name.length > 15 ? task.Name.substring(0, 15) + '...' : task.Name) : ''
+                        formatDescription: task.Comment__c ? (task.Comment__c.length > 40 ? task.Comment__c.substring(0, 40) + '...' : task.Comment__c) : '',
+                        formatTitle: task.Task__c ? (task.Task__c.length > 15 ? task.Task__c.substring(0, 15) + '...' : task.Task__c) : ''
                     })
                 })
             }
@@ -269,15 +269,15 @@ export default class taskBar extends LightningElement {
                     tasks.map((task) => {
                         this.tasks.push({
                             id: task.Id,
-                            title: task.Name,
+                            title: task.Task__c,
                             duration: task.Duration__c,
                             startTime: msToTime(task.StartTime__c),
                             endTime: msToTime(task.EndTime__c),
                             formattedDuration: this.formatDuration(task.Duration__c),
-                            description: task.Description__c,
+                            description: task.Comment__c,
                             category: task.Category__c,
-                            formatDescription: task.Description__c ? (task.Description__c.length > 40 ? task.Description__c.substring(0, 40) + '...' : task.Description__c) : '',
-                            formatTitle: task.Name ? (task.Name.length > 15 ? task.Name.substring(0, 15) + '...' : task.Name) : ''
+                            formatDescription: task.Comment__c ? (task.Comment__c.length > 40 ? task.Comment__c.substring(0, 40) + '...' : task.Comment__c) : '',
+                            formatTitle: task.Task__c ? (task.Task__c.length > 15 ? task.Task__c.substring(0, 15) + '...' : task.Task__c) : ''
                         })
                     })
                 }

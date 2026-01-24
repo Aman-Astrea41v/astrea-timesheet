@@ -54,7 +54,10 @@ export default class Login extends LightningElement {
                 return;
             }
             else{
-                if(user.Custom_user.Password__c != this.password){
+                if(user.Custom_user.Active__c == false){
+                    showAlert(this,'Error','You are Blocked by the Admin.','error');
+                }
+                else if(user.Custom_user.Password__c != this.password){
                     showAlert(this,'Error','Incorrect password','error');
                 }
                 else{
