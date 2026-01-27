@@ -194,7 +194,7 @@ export default class Navbar extends LightningElement {
             })
             if(response){
                 await showAlert(this,'Success', 'Punched Out Successfully', 'success');
-                if(event.currentTarget.dataset.id == 'punchOutAnyway'){
+                if(event?.currentTarget?.dataset?.id == 'punchOutAnyway'){
                     const email = await getCookies('email');
                     let user = await getUsers({email:email});
                     let userDetail = {

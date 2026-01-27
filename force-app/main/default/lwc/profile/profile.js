@@ -44,14 +44,14 @@ export default class Profile extends LightningElement {
             this.isLoading = true;
             const email = await getCookies('email');   
             const user = await getUsers({ email: email });
-            let formattedName = getFormattedNameAndAbbreviation(user?.Custom_user?.First_Name__c, user?.Custom_user?.Last_Name__c);
+            let formattedName = getFormattedNameAndAbbreviation(user?.Custom_user?.Name.split(' ')[0], user?.Custom_user?.Name.split(' ')[1]);
             this.user.Id = user?.Custom_user?.Employee_Id__c;
+            this.user.batch = user?.Custom_user?.Batch__c;
             this.user.abbreviation = formattedName?.profileText;
             this.user.fullname = formattedName?.fullName;
-            this.user.fname = user?.Custom_user?.First_Name__c || 'N/A';
-            this.user.lname = user?.Custom_user?.Last_Name__c || 'N/A';
+            this.user.fname = user?.Custom_user?.Name.split(' ')[0] || 'N/A';
+            this.user.lname = user?.Custom_user?.Name.split(' ')[1] || 'N/A';
             this.user.email = user?.Custom_user?.Email__c || 'N/A';
-            this.user.username = user?.Custom_user?.Name || 'N/A';
             this.user.collegeName = user?.Custom_user?.CollegeName__c || 'N/A';
             this.user.phone = user?.Custom_user?.Phone__c || 'N/A';
             this.user.street = user?.Custom_user?.Address__c?.street || 'N/A';
@@ -147,8 +147,7 @@ export default class Profile extends LightningElement {
                     },
                     collegeName: this.user.collegeName,
                     phone: this.user.phone,
-                    email: this.user.email,
-                    username: this.user.username
+                    email: this.user.email
                 });
                 if (response) {
                     await showAlert(this, 'Success', 'Profile Updated Successfully', 'success');

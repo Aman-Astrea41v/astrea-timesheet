@@ -1,5 +1,8 @@
 import { LightningElement,wire } from 'lwc';
+// User Class Imports
 import getUsers from "@salesforce/apex/Users.getUsers";
+import setLastLogin from "@salesforce/apex/Users.setLastLogin";
+
 import { showAlert, setCookies } from 'c/utils';
 import CryptoJS from "@salesforce/resourceUrl/CryptoJS";
 import { loadScript } from 'lightning/platformResourceLoader';
@@ -63,6 +66,7 @@ export default class Login extends LightningElement {
                 else{
                     await setCookies('email',this.email);
                     await setCookies('uid',user.Custom_user.Id);
+                    await setLastLogin({email:this.email});
                     showAlert(this,'Success','Login successful','success');
                     let event = new CustomEvent('navigate', {detail: 'home'});
                     this.dispatchEvent(event);

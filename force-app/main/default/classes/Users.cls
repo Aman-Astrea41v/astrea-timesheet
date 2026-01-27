@@ -14,7 +14,7 @@ public without sharing class Users {
     @AuraEnabled
     public static UserWrapper getUsers(String email){
         try{
-            Employee__c user1 = [SELECT Id,Employee_Id__c,CollegeName__c,First_Name__c,Last_Name__c, Name, Email__c,Password__c,Address__c,Phone__c,Active__c  FROM Employee__c WHERE Email__c = :email LIMIT 1];
+            Employee__c user1 = [SELECT Id,Employee_Id__c,CollegeName__c,First_Name__c,Last_Name__c, Name, Email__c,Password__c,Address__c,Phone__c,Active__c,Batch__c  FROM Employee__c WHERE Email__c = :email LIMIT 1];
             UserWrapper userData = new UserWrapper();
             userData.Custom_user = user1;
             userData.StateCode = user1?.Address__c != null ? user1.Address__c.getStateCode() : 'UP' ;
@@ -24,6 +24,17 @@ public without sharing class Users {
         catch(Exception err){
             System.debug(err);
             return null;
+        }
+    }
+
+    @AuraEnabled
+    public static void setLastLogin(String email){
+        try {
+            Employee__c user = [SELECT Last_Login__c FROM Employee__c WHERE Email__c = :email LIMIT 1];
+            user.Last_Login__c = Datetime.now();
+            update user;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
         }
     }
 
@@ -77,7 +88,6 @@ public without sharing class Users {
             user.Address__StateCode__s = address.get('state');
             user.CollegeName__c = collegeName;
             user.Phone__c = phone;
-            user.Name = username;
 
             update user;
         } catch (Exception e) {

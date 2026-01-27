@@ -3,7 +3,7 @@ public without sharing class Tasks {
     public static List<TimeSheet__c> getAllTasks(String userId,String specificDate){
         try {
             Date taskDate = Date.valueOf(specificDate);
-            List<TimeSheet__c> tasks = [SELECT Id, Task__c, Duration__c,StartTime__c,EndTime__c, Comment__c,Category__c FROM TimeSheet__c WHERE Employee__c = :userId AND Date__c = :taskDate ORDER BY StartTime__c ASC];
+            List<TimeSheet__c> tasks = [SELECT Id, Task__c, Time__c,StartTime__c,EndTime__c, Comment__c,Category__c FROM TimeSheet__c WHERE Employee__c = :userId AND Date__c = :taskDate ORDER BY StartTime__c ASC];
 
             if(tasks.isEmpty()){
                 return new List<TimeSheet__c>();
@@ -18,13 +18,13 @@ public without sharing class Tasks {
     @AuraEnabled
     public static void updateDailyTotal(String userId,Date specificDate){
         try {
-            List<TimeSheet__c> allTasks = [SELECT Id, Duration__c FROM TimeSheet__c WHERE Date__c = :specificDate AND Employee__c = :userId];
+            List<TimeSheet__c> allTasks = [SELECT Id, Time__c FROM TimeSheet__c WHERE Date__c = :specificDate AND Employee__c = :userId];
             Punch_In_Out__c report = [SELECT Id, Daily_Total_Time__c FROM Punch_In_Out__c WHERE Employee__c  = :userId AND Date__c = :specificDate LIMIT 1];
 
             if(report != null){
                 report.Daily_Total_Time__c = 0;
                 for(TimeSheet__c task : allTasks){
-                    report.Daily_Total_Time__c += task.Duration__c;
+                    report.Daily_Total_Time__c += Integer.valueOf(task.Time__c);
                 }
                 update report;
             }
@@ -53,17 +53,22 @@ public without sharing class Tasks {
 
             Date taskDate = Date.valueOf(specificDate);
 
+            // Getting Day of Week
+            Datetime dt = Datetime.newInstance(taskDate.year(), taskDate.month(), taskDate.day());
+            String dayOfWeek = dt.format('EEEE');
+
             // Inserting Task
             TimeSheet__c task = new TimeSheet__c();
             task.Employee__c = userId;
             task.Date__c = taskDate;
             task.Task__c = taskName;
             task.Comment__c = taskDescription;
-            task.Duration__c = Duration;
+            task.Time__c = String.valueOf(Duration);
             task.StartTime__c = sTime;
             task.EndTime__c = eTime;
             task.Category__c = category;
             task.Others_Category_Text__c = otherCategory;
+            task.Day__c = dayOfWeek;
             insert task;
 
             // Update Daily Total in Report
@@ -80,7 +85,7 @@ public without sharing class Tasks {
     public static Boolean updateTask(String taskId, String taskName, String taskDescription, Integer Duration, String startTime, String endTime, String category, String otherCategory) {
         try {
             // Get the task to update
-            TimeSheet__c existingTask = [SELECT Id, Task__c, Duration__c, StartTime__c, EndTime__c, Comment__c ,Employee__c, Date__c
+            TimeSheet__c existingTask = [SELECT Id, Task__c, Time__c, StartTime__c, EndTime__c, Comment__c ,Employee__c, Date__c
                                     FROM TimeSheet__c WHERE Id = :taskId LIMIT 1];
 
             if(existingTask != null){
@@ -102,7 +107,7 @@ public without sharing class Tasks {
                 // Update current task
                 existingTask.Task__c = taskName;
                 existingTask.Comment__c = taskDescription;
-                existingTask.Duration__c = Duration;
+                existingTask.Time__c = String.valueOf(Duration);
                 existingTask.StartTime__c = sTime;
                 existingTask.EndTime__c = eTime;
                 existingTask.Category__c = category;
@@ -126,11 +131,11 @@ public without sharing class Tasks {
     @AuraEnabled
     public static Boolean deleteTask(String taskId, String userId) {
         try {
-            Punch_In_Out__c report = [SELECT Id,Punch_In__c FROM Punch_In_Out__c WHERE Employee__c  = :userId AND Date__c = TODAY LIMIT 1];
+            Punch_In_Out__c report = [SELECT Id,Punch_In_Time__c FROM Punch_In_Out__c WHERE Employee__c  = :userId AND Date__c = TODAY LIMIT 1];
 
-            Time punchInTime = report.Punch_In__c;
+            Time punchInTime = report.Punch_In_Time__c;
             
-            TimeSheet__c taskToDelete = [SELECT Id, StartTime__c, EndTime__c, Duration__c, Date__c 
+            TimeSheet__c taskToDelete = [SELECT Id, StartTime__c, EndTime__c, Time__c, Date__c 
                                     FROM TimeSheet__c WHERE Id = :taskId LIMIT 1];
 
             Date dateToUpdateDailyTotal = taskToDelete.Date__c;
